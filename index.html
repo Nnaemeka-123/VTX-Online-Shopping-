@@ -334,7 +334,7 @@ function render(){if(!LOADED){renderBoot();return}
 }
 addEventListener('hashchange',()=>{closeModal();render();scrollTo(0,0)});
 
-function pendingCount(){if(!isAdmin())return 0;return S.orders.filter(o=>o.status==='verifying').length+S.payments.filter(p=>p.status==='pending').length+(S.wd||0)}
+function pendingCount(){if(!isAdmin())return 0;return S.orders.filter(o=>o.status==='verifying'&&!o.payRef).length+S.payments.filter(p=>p.status==='pending').length+(S.wd||0)}
 function shell(content,active){
  const u=me(),cc=S.cart.reduce((a,c)=>a+c.qty,0),pc=pendingCount();
  const items=[['home','Home','home'],['orders','Orders','box'],['wallet','Balance','wallet'],['products','Products','bag'],['customers','Customers','users'],['chart','Analytics','trend'],['marketing','Marketing','mega'],['discounts','Discounts','tag'],['market','Market','store','Sales channels'],['store','Create store','plus'],['connect','Connect store','link','Apps'],['ai','VTX AI','spark'],['menu','Menu','menu']];
@@ -407,17 +407,6 @@ function viewCart(){
  return`<div class="page-h"><h1>Cart</h1></div><div class="card flush">${L.map(({c,p})=>`<div class="item"><img class="thumb" src="${pimg(p)}" alt=""><div class="grow"><a class="b" href="#/product/${p.id}">${esc(p.name)}</a><div class="mut sm">${esc(brandOf(p.brandId).name)} · ${money(p.price)}</div></div><div class="qty"><button data-a="cq" data-id="${p.id}" data-v="-1" aria-label="Less">−</button><span>${c.qty}</span><button data-a="cq" data-id="${p.id}" data-v="1" aria-label="More">+</button></div><div class="b right" style="min-width:84px">${money(p.price*c.qty)}<span class="usd">${usd(p.price*c.qty)}</span></div><button class="tbtn" style="color:#616161" data-a="crm" data-id="${p.id}" aria-label="Remove">${ic('trash')}</button></div>`).join('')}</div>
  <div class="card"><div class="row"><span class="grow b">Total</span><span class="b" style="font-size:18px">${money(total)}<span class="usd">${usd(total)}</span></span></div><button class="btn p lg full" style="margin-top:12px" data-a="tocheckout">Checkout</button></div>`;
 }
-const CRYPTO0={coin:'USDT',network:'BNB Smart Chain (BEP-20)',address:'0x2b0C255d7B39B255092B2517C97FA1F7A0cBDE1a'};
-function payBox(amount,label){const a=S.settings.account,c=S.settings.crypto||CRYPTO0;const usdt=amount!=null?(amount/usdRate()).toFixed(2):null;
- return`<div class="pay"><div class="sm mut" style="margin-bottom:4px">${label} (Nigerian bank transfer)</div>
- <div class="l"><span class="mut">Account name</span><span class="chip2 b">${esc(a.name)}<button class="btn sm" type="button" data-a="copy" data-v="${esc(a.name)}">${ic('copy')}</button></span></div>
- <div class="l"><span class="mut">Bank</span><span class="b">${esc(a.bank)}</span></div>
- <div class="l"><span class="mut">Account number</span><span class="chip2 b">${esc(a.number)}<button class="btn sm" type="button" data-a="copy" data-v="${esc(a.number)}">${ic('copy')}</button></span></div>
- ${amount!=null?`<div class="l"><span class="mut">Amount</span><span class="chip2 b">${money(amount)}<button class="btn sm" type="button" data-a="copy" data-v="${amount}">${ic('copy')}</button></span></div>`:''}</div>
- <div class="pay" style="margin-top:10px"><div class="sm mut" style="margin-bottom:4px">Outside Nigeria? Pay with ${esc(c.coin)} on ${esc(c.network)}</div>
- <div class="b" style="word-break:break-all;font-size:12.5px;margin:4px 0">${esc(c.address)} <button class="btn sm" type="button" data-a="copy" data-v="${esc(c.address)}">${ic('copy')}</button></div>
- ${usdt?`<div class="l"><span class="mut">Send about</span><span class="b">${usdt} ${esc(c.coin)}</span></div>`:''}
- <p class="hint">Send only ${esc(c.coin)} on the ${esc(c.network)} network. Coins sent on another network are lost. Enter your transaction hash as the reference below.</p></div>`}
 function viewCheckout(){
  const L=cartLines(),u=me();if(!L.length)return viewCart();
  const T=calc(L),total=T.net,D=UI.draft||{};
@@ -432,13 +421,11 @@ function viewCheckout(){
  <input type="hidden" name="lat" value="${esc(D.lat||'')}"><input type="hidden" name="lng" value="${esc(D.lng||'')}">
  <button class="btn" type="button" data-a="geo">${ic('pin')}Share my current location</button><div class="hint" id="geost">Optional. Helps the rider find you faster.</div></div></div>
  <div class="col"><div class="card"><h2>Order summary</h2>${L.map(({c,p})=>`<div class="row" style="padding:6px 0"><span class="grow">${esc(p.name)} <span class="mut">× ${c.qty}</span></span><span>${money(p.price*c.qty)}</span></div>`).join('')}<div class="row gap8" style="margin-top:8px"><input class="in" id="codein" placeholder="Discount code" value="${esc(UI.code?UI.code.code:'')}" aria-label="Discount code"><button class="btn" type="button" data-a="applycode">Apply</button></div>${T.disc?`<div class="row" style="padding-top:8px"><span class="grow">Discount (${esc(UI.code.code)})</span><span>−${money(T.disc)}</span></div>`:''}<hr class="hr"><div class="row"><span class="grow b">Total to pay</span><span class="b right" style="font-size:18px">${money(total)}<span class="usd">${usd(total)}</span></span></div></div>
- <div class="card"><h2>Pay by bank transfer</h2><p class="mut sm" style="margin-bottom:10px">Send the exact total to this account, then enter your transfer reference below.</p>${payBox(total,'Send payment to')}
- <label class="f" style="margin-top:12px"><span>Transfer reference, sender name or crypto transaction hash</span><input class="in" name="ref" value="${esc(D.ref||'')}" required placeholder="Shown on your bank receipt"></label>
- <button class="btn p lg full" type="submit">Place order</button><p class="hint">Your order is confirmed once the payment is verified.</p></div></div></form>
+ <div class="card"><h2>Pay securely online</h2><p class="mut sm" style="margin-bottom:10px">Pay with your card, bank transfer or USSD. A secure payment window opens when you tap the button.</p>${S.settings.payOn?'':'<div class="ban cr"><div>Online payment is not set up yet. Please try again later.</div></div>'}<button class="btn p lg full" type="submit" ${S.settings.payOn?'':'disabled'}>Pay ${money(total)}</button><p class="hint">Your order is confirmed automatically once the payment goes through. Payments are processed by Paystack.</p></div></div></form>
  <style>@media(max-width:800px){#co{grid-template-columns:1fr!important}}</style>`;
 }
 
-const STAT={verifying:['Awaiting payment check','wa'],paid:['Paid','in'],shipped:['Shipped','in'],delivered:['Delivered','ok'],cancelled:['Cancelled','cr']};
+const STAT={verifying:['Awaiting payment','wa'],paid:['Paid','in'],shipped:['Shipped','in'],delivered:['Delivered','ok'],cancelled:['Cancelled','cr']};
 function viewOrders(){
  const u=me(),mb=myBrand();
  const tabs=[['mine','My purchases']];if(mb)tabs.push(['brand','Brand orders']);if(isAdmin())tabs.push(['all','All orders']);
@@ -454,7 +441,8 @@ function orderCard(o){
  const showShip=admin||buyer||(seller&&['paid','shipped','delivered'].includes(o.status));
  const sh=o.ship;const maps=sh.lat?`https://www.google.com/maps?q=${sh.lat},${sh.lng}`:'';
  let act='';
- if(admin&&o.status==='verifying')act+=`<button class="btn g sm" data-a="ord" data-v="confirm" data-id="${o.id}">Confirm payment</button>`;
+ if(buyer&&o.status==='verifying'&&o.payRef)act+=`<button class="btn g sm" data-a="repay" data-ref="${o.payRef}">Pay now</button>`;
+ if(admin&&o.status==='verifying'&&!o.payRef)act+=`<button class="btn g sm" data-a="ord" data-v="confirm" data-id="${o.id}">Confirm payment</button>`;
  if((admin||seller)&&o.status==='paid')act+=`<button class="btn p sm" data-a="ord" data-v="ship" data-id="${o.id}">Mark as shipped</button>`;
  if((buyer||admin)&&o.status==='shipped')act+=`<button class="btn g sm" data-a="ord" data-v="deliver" data-id="${o.id}">${buyer?'I received it':'Mark delivered'}</button>`;
  if(admin&&['verifying','paid'].includes(o.status))act+=`<button class="btn d sm" data-a="ord" data-v="cancel" data-id="${o.id}">Cancel order</button>`;
@@ -463,7 +451,7 @@ function orderCard(o){
  ${o.discount?`<div class="row sm mut" style="padding-top:4px"><span class="grow">Discount (${esc(o.code)})</span><span>−${money(o.discount)}</span></div>`:''}<div class="row" style="padding-top:6px"><span class="grow b">Total</span><span class="b right">${money(o.subtotal)}<span class="usd">${usd(o.subtotal)}</span></span></div>
  ${(admin||seller)?`<div class="row sm mut" style="padding-top:4px"><span class="grow">VTXOnline commission (${Math.round(o.rate*100)}%)</span><span>${money(o.commission)}</span></div><div class="row sm" style="padding-top:2px"><span class="grow">Brand payout</span><span class="b">${money(o.payout)}</span></div>`:''}
  ${showShip?`<hr class="hr"><div class="sm"><div class="b">Deliver to ${esc(sh.name)}</div><div>${esc(sh.address)}, ${esc(sh.city)}, ${esc(sh.state)}</div>${sh.landmark?`<div class="mut">Landmark: ${esc(sh.landmark)}</div>`:''}<div>Phone: <a href="tel:${esc(sh.phone)}">${esc(sh.phone)}</a>${maps?` · <a href="${maps}" target="_blank" rel="noopener">View on map</a>`:''}</div></div>`:(seller?`<p class="hint">Delivery details appear once payment is confirmed.</p>`:'')}
- ${admin?`<div class="sm mut" style="margin-top:6px">Payment reference: ${esc(o.ref)}</div>`:''}
+ ${admin?`<div class="sm mut" style="margin-top:6px">Payment reference: ${esc(o.payRef||o.ref)}${o.payMethod?' · '+esc(o.payMethod):''}</div>`:''}
  ${act?`<div class="row wrap2 gap8" style="margin-top:12px">${act}</div>`:''}</div>`;
 }
 function viewChart(){
@@ -512,7 +500,7 @@ function viewSettings(){
  return`<div class="page-h"><h1>Settings</h1></div>
  <div class="card"><h2>Profile</h2><form data-f="profile" style="margin-top:10px"><label class="f"><span>Name</span><input class="in" name="name" required value="${esc(u.name)}"></label><label class="f"><span>Phone</span><input class="in" name="phone" type="tel" value="${esc(u.phone||'')}"></label>${isAdmin()?`<label class="f"><span>Email (your admin login)</span><input class="in" name="email" type="email" required value="${esc(u.email)}"></label>`:`<label class="f"><span>Email</span><input class="in" value="${esc(u.email)}" disabled></label>`}<button class="btn p" type="submit">Save profile</button></form></div>
  <div class="card"><h2>Change password</h2><form data-f="pass" style="margin-top:10px"><label class="f"><span>Current password</span><input class="in" name="old" type="password" required autocomplete="current-password"></label><label class="f"><span>New password</span><input class="in" name="new" type="password" required minlength="6" autocomplete="new-password"></label><button class="btn p" type="submit">Update password</button></form></div>
- ${isAdmin()?`<div class="card"><h2>Payment account</h2><p class="mut sm">Shown to brand owners (listing fee) and shoppers (orders).</p><form data-f="acct" style="margin-top:10px"><label class="f"><span>Account name</span><input class="in" name="name" required value="${esc(s.account.name)}"></label><div class="grid g2 keep"><label class="f"><span>Bank</span><input class="in" name="bank" required value="${esc(s.account.bank)}"></label><label class="f"><span>Account number</span><input class="in" name="number" required value="${esc(s.account.number)}"></label></div><div class="grid g2 keep"><label class="f"><span>Brand listing fee (₦)</span><input class="in" name="fee" type="number" min="0" required value="${s.fee}"></label><label class="f"><span>Commission on orders (%)</span><input class="in" name="comm" type="number" min="0" max="100" step="0.1" required value="${(rate()*100).toFixed(1).replace(/\.0$/,'')}"></label></div><label class="f"><span>USDT wallet address (BNB Smart Chain, BEP-20)</span><input class="in" name="cryptoaddr" value="${esc((S.settings.crypto||CRYPTO0).address)}" pattern="0x[a-fA-F0-9]{40}" required></label><label class="f"><span>Minimum withdrawal (₦)</span><input class="in" name="minw" type="number" min="0" value="${S.settings.minWithdraw??1000}"></label><label class="f"><span>Dollar rate (₦ per $1)</span><input class="in" name="usd" type="number" min="0" step="any" value="${S.settings.usdRate||0}"><div class="hint">Leave 0 to use the live rate (now ${money(usdRate())} = $1).</div></label><button class="btn p" type="submit">Save platform settings</button></form></div>
+ ${isAdmin()?`<div class="card"><h2>Platform settings</h2><p class="mut sm">${S.settings.payOn?'Online payments (Paystack) are ON.':'Online payments are OFF. Add PAYSTACK_SECRET_KEY and PAYSTACK_PUBLIC_KEY in Netlify, then redeploy.'} The bank account below is only used at the VTX POS till.</p><form data-f="acct" style="margin-top:10px"><label class="f"><span>Account name</span><input class="in" name="name" required value="${esc(s.account.name)}"></label><div class="grid g2 keep"><label class="f"><span>Bank</span><input class="in" name="bank" required value="${esc(s.account.bank)}"></label><label class="f"><span>Account number</span><input class="in" name="number" required value="${esc(s.account.number)}"></label></div><div class="grid g2 keep"><label class="f"><span>Brand listing fee (₦)</span><input class="in" name="fee" type="number" min="0" required value="${s.fee}"></label><label class="f"><span>Commission on orders (%)</span><input class="in" name="comm" type="number" min="0" max="100" step="0.1" required value="${(rate()*100).toFixed(1).replace(/\.0$/,'')}"></label></div><label class="f"><span>Minimum withdrawal (₦)</span><input class="in" name="minw" type="number" min="0" value="${S.settings.minWithdraw??1000}"></label><label class="f"><span>Dollar rate (₦ per $1)</span><input class="in" name="usd" type="number" min="0" step="any" value="${S.settings.usdRate||0}"><div class="hint">Leave 0 to use the live rate (now ${money(usdRate())} = $1).</div></label><button class="btn p" type="submit">Save platform settings</button></form></div>
  <div class="card"><h2>Data</h2><p class="mut sm" style="margin-bottom:10px">Everything is saved on the shared server, so all users see the same brands, products and orders.</p><div class="row wrap2 gap8"><button class="btn" data-a="export">Download backup</button>${hasLocal()?`<button class="btn p" data-a="migrate">Move my old phone data to the server</button>`:''}</div></div>`:''}
  <button class="btn lg full" data-a="logout">${ic('out')}Sign out</button>`;
 }
@@ -531,8 +519,7 @@ function viewSell(){
  const pay=S.payments.filter(p=>p.brandId===b.id).pop();
  if(b.status==='pending')return`<div class="page-h"><h1>${esc(b.name)}</h1></div><div class="ban wa">${ic('shield')}<div><b>Payment under review.</b> We are checking your transfer of ${money(pay?.amount||S.settings.fee)} (ref: ${esc(pay?.ref||'')}). Your brand goes live as soon as it is approved.</div></div>`;
  return`<div class="page-h"><h1>Pay the listing fee</h1></div>${b.status==='rejected'?`<div class="ban cr"><div>Your last payment could not be verified. Check the details and submit again.</div></div>`:b.status==='suspended'?`<div class="ban cr"><div>This brand is suspended. Contact the admin.</div></div>`:''}
- ${b.status==='suspended'?'':`<div class="card"><h2>${esc(b.name)}</h2><p class="mut" style="margin:4px 0 12px">Pay a one-time fee of <b>${money(S.settings.fee)}</b> to list products on VTXOnline.</p>${payBox(S.settings.fee,'Transfer to')}
- <form data-f="paylist" style="margin-top:14px"><label class="f"><span>Transfer reference, sender name or crypto transaction hash</span><input class="in" name="ref" required></label><label class="f"><span>Payment screenshot (optional)</span><input class="in" type="file" id="prooff" accept="image/*"><div id="proofprev"></div></label><button class="btn g lg" type="submit">I have paid</button></form></div>`}`;
+ ${b.status==='suspended'?'':`<div class="card"><h2>${esc(b.name)}</h2><p class="mut" style="margin:4px 0 12px">Pay a one-time fee of <b>${money(S.settings.fee)}</b> to list products on VTXOnline. <span class="usd">${usd(S.settings.fee)}</span></p>${S.settings.payOn?'':'<div class="ban cr"><div>Online payment is not set up yet. Please try again later.</div></div>'}<button class="btn p lg full" data-a="payfee" ${S.settings.payOn?'':'disabled'}>Pay ${money(S.settings.fee)}</button><p class="hint">Pay with your card, bank transfer or USSD. Your store goes live automatically after payment. Payments are processed by Paystack.</p></div>`}`;
 }
 function sellDash(b){
  const L=S.products.filter(p=>p.brandId===b.id),O=S.orders.filter(o=>o.brandId===b.id&&counted(o));
@@ -553,7 +540,7 @@ function viewAdmin(){
   <div class="card flush"><div class="grid g4" style="gap:0">${[['Your commission',money(comm)],['Owed to brands',money(owed)],['Listing fees',money(fees)],['Orders to verify',S.orders.filter(o=>o.status==='verifying').length]].map((s,i)=>`<div class="stat" style="${i?'border-left:1px solid var(--line)':''}"><div class="mut sm">${s[0]}</div><div class="n" style="font-size:18px">${s[1]}</div></div>`).join('')}</div></div>
   <div class="card"><h2>Admin login</h2><p class="mut">Signed in as ${esc(me().email)}. Admin never pays listing fees.</p><p style="margin-top:10px"><a class="btn" href="#/orders">Review orders</a></p></div>`;
  }else if(UI.atab==='payments'){
-  const L=[...S.payments].reverse();
+  const L=[...S.payments].filter(p=>p.status!=='awaiting').reverse();
   body=L.length?L.map(p=>{const b=brandOf(p.brandId),u=S.users.find(x=>x.id===p.userId);return`<div class="card"><div class="row wrap2"><div class="grow"><div class="b">${esc(b?.name||'Deleted brand')}</div><div class="mut sm">${esc(u?.name||'')} · ${esc(u?.email||'')} · ${fdate(p.created)}</div></div>${badge(p.status,p.status==='approved'?'ok':p.status==='rejected'?'cr':'wa')}</div><div style="margin-top:8px">Amount: <b>${money(p.amount)}</b> · Ref: <b>${esc(p.ref)}</b></div>${p.proof?`<img class="proof" src="${p.proof}" alt="Payment proof">`:''}${p.status==='pending'?`<div class="row gap8" style="margin-top:12px"><button class="btn g sm" data-a="pay" data-v="approve" data-id="${p.id}">Approve and publish</button><button class="btn d sm" data-a="pay" data-v="reject" data-id="${p.id}">Reject</button></div>`:''}</div>`}).join(''):`<div class="card empty"><h2>No payments yet</h2><p>Listing fee payments from brand owners appear here.</p></div>`;
  }else if(UI.atab==='brands'){
   body=`<div class="card flush">${S.brands.map(b=>`<div class="item">${b.logo?`<img class="thumb" src="${b.logo}" alt="" style="object-fit:contain;background:#fff">`:`<span class="avatar" style="width:44px;height:44px;border-radius:8px">${esc(initials(b.name))}</span>`}<div class="grow"><div class="b">${esc(b.name)}</div><div class="mut sm">${b.status} · ${S.products.filter(p=>p.brandId===b.id).length} products</div></div>${b.id==='b_vtx'?'':b.status==='active'?`<button class="btn sm" data-a="bst" data-v="suspended" data-id="${b.id}">Suspend</button>`:`<button class="btn sm" data-a="bst" data-v="active" data-id="${b.id}">Activate</button>`}${b.id==='b_vtx'?'':`<button class="btn sm d" data-a="bdel" data-id="${b.id}" aria-label="Delete">${ic('trash')}</button>`}</div>`).join('')}</div>`;
@@ -582,7 +569,7 @@ function bBadge(b){const m={unpaid:['Unpaid','wa'],pending:['Payment review','wa
 function pBadge(p){const s=pst(p);const m={publishing:['Publishing','wa'],active:['Active','ok'],draft:['Draft','']}[s]||[s,''];return`<span class="bd ${m[1]}">${s==='publishing'?'<i class="spin"></i>':''}${m[0]}</span>`}
 function stepper(b){
  const admin=b.ownerId==='u_admin',ord=['unpaid','pending','publishing','active'];let at=b.status==='rejected'?0:ord.indexOf(b.status);if(b.status==='draft')at=2;
- const S4=[['Store created','Your brand details are saved.',true],['Listing fee',admin?'Not required for the admin.':'Pay by Opay transfer and send your reference.',at>=2||admin],['Publishing','We run checks on your store and products.',at>=3],['Active · live','Shoppers can see and buy from your store.',at>=3]];
+ const S4=[['Store created','Your brand details are saved.',true],['Listing fee',admin?'Not required for the admin.':'Pay online with Paystack (card, bank transfer or USSD).',at>=2||admin],['Publishing','We run checks on your store and products.',at>=3],['Active · live','Shoppers can see and buy from your store.',at>=3]];
  const cur=admin?(at>=3?4:2):(at>=3?4:at>=2?2:1)+(at>=2&&at<3?0:0);
  let curIdx=at>=3?4:(at===2?2:1);
  return`<div class="card"><h2>Store status</h2>${S4.map((s,i)=>`<div class="step"><span class="dot ${s[2]?'done':''}">${s[2]?ic('check'):''}</span><div class="grow"><div class="b">${s[0]} ${i===curIdx&&!s[2]?badge('In progress','wa'):''}</div><div class="mut sm">${s[1]}</div></div></div>`).join('')}</div>`}
@@ -657,12 +644,12 @@ function statusAnswer(){const b=myBrand();
  const m={unpaid:'You still need to pay the listing fee and send your reference.',pending:'Your payment is waiting for the admin to confirm it. It moves to Publishing right after.',publishing:'Your store is publishing now. It becomes Active in a few seconds, and the page updates by itself.',active:'Your store is Active and live.',draft:'Your store is a Draft. Open Create store, check your name and description, and save.',rejected:'Your payment could not be verified. Check the reference and submit again.',suspended:'Your store is suspended. Contact the admin.'}[b.status];
  return`${base}\n\nYour store right now: **${b.status}**. ${m}\n`+GO('#/store','Open Create store')}
 const KB=[
-{k:['sell','start selling','open brand','open my brand','create store','create a store','upload brand','upload my brand','list my brand','become a seller','my brand','my store','create my store'],a:()=>`To sell on VTXOnline:\n1. Create an account.\n2. Open **Create store** and add your brand name, logo and description.\n3. Pay the one-time listing fee of **${money(S.settings.fee)}** and send your transfer reference.\n4. After the admin confirms, your store goes to **Publishing**, then **Active** (live).\n5. Add products with real photos, prices and descriptions.\n${GO('#/store','Open Create store')}`},
-{k:['listing fee','fee','pay to upload','pay to sell','how much','opay','account number','bank','deposit','transfer'],a:()=>`The one-time listing fee is **${money(S.settings.fee)}**. Transfer it to **${S.settings.account.name}**, ${S.settings.account.bank} **${S.settings.account.number}**, then enter your transfer reference on the Create store page. The admin never pays this fee.\n${GO('#/store','Go to payment')}`},
+{k:['sell','start selling','open brand','open my brand','create store','create a store','upload brand','upload my brand','list my brand','become a seller','my brand','my store','create my store'],a:()=>`To sell on VTXOnline:\n1. Create an account.\n2. Open **Create store** and add your brand name, logo and description.\n3. Pay the one-time listing fee of **${money(S.settings.fee)}** online (card, bank transfer or USSD).\n4. After the admin confirms, your store goes to **Publishing**, then **Active** (live).\n5. Add products with real photos, prices and descriptions.\n${GO('#/store','Open Create store')}`},
+{k:['listing fee','fee','pay to upload','pay to sell','how much','paystack','pay online','card'],a:()=>`The one-time listing fee is **${money(S.settings.fee)}**. On the Create store page tap **Pay**, then pay with your card, bank transfer or USSD in the secure Paystack window. Your store goes to **Publishing** and then **Active** automatically after the payment goes through.\n${GO('#/store','Go to payment')}`},
 {k:['publishing','publish','active','live','draft','status','not showing','not live','go live','why is my','stuck','not visible'],a:statusAnswer},
 {k:['add product','upload product','new product','add item','photo','picture','image','price','description','my product','products','where is my product','where can i see'],a:()=>`Go to **Products** (or **Create store**, which also lists everything you upload) and tap **Add product**. Add a real photo, a price and a description of at least 10 characters. Each new product shows **Publishing**, then **Active** when it passes the checks. If it becomes **Draft**, the reason appears beside it.\n${GO('#/products','Open Products')} ${GO('#/store','Open Create store')}`},
-{k:['order','buy','purchase','checkout','how do i order','place order','shop'],a:()=>`To order: open the **Market**, pick a product, tap **Add to cart** or **Buy now**. At checkout enter your name, phone number, address, city and state (you can also share your GPS location). Pay the total by Opay transfer, enter your transfer reference and tap **Place order**.\n${GO('#/market','Open Market')} ${GO('#/cart','Open Cart')}`},
-{k:['awaiting','verifying','payment check','confirm payment','paid','waiting for payment','not confirmed','my order'],a:()=>`After you place an order, its status is **Awaiting payment check** until the admin sees your transfer and confirms it. Then it becomes **Paid**, the brand owner ships it (**Shipped**), and you tap **I received it** to finish (**Delivered**).\n${GO('#/orders','Open Orders')}`},
+{k:['order','buy','purchase','checkout','how do i order','place order','shop'],a:()=>`To order: open the **Market**, pick a product, tap **Add to cart** or **Buy now**. At checkout enter your name, phone number, address, city and state (you can also share your GPS location), then tap **Pay**. Pay by card, bank transfer or USSD in the secure window. Your order is confirmed automatically.\n${GO('#/market','Open Market')} ${GO('#/cart','Open Cart')}`},
+{k:['awaiting','verifying','payment check','confirm payment','paid','waiting for payment','not confirmed','my order'],a:()=>`A new order is **Awaiting payment** until your payment goes through. It then becomes **Paid** by itself, the brand owner ships it (**Shipped**), and you tap **I received it** to finish (**Delivered**). If the payment window closed, open **Orders** and tap **Pay now**. Unpaid orders are cancelled after 30 minutes.\n${GO('#/orders','Open Orders')}`},
 {k:['commission','10%','10 percent','earn','earnings','payout','paid out','my money','how do i get paid'],a:()=>`VTXOnline keeps **${Math.round(rate()*100)}%** of each confirmed order. The brand owner gets the other **${Math.round((1-rate())*100)}%**. Example: a ₦10,000 order pays ${money(10000*(1-rate()))} to the brand and ${money(10000*rate())} to VTXOnline. The admin marks the order **Seller paid out** after sending the money.\n${GO('#/orders','Open Orders')}`},
 {k:['delivery','deliver','location','address','phone','gps','rider'],a:()=>`At checkout the buyer enters name, phone, address, city and state, and can tap **Share my current location**. The brand owner sees these details once payment is confirmed, with a map link if a location was shared.\n${GO('#/cart','Open Cart')}`},
 {k:['chart','index','analytics','going up','going down','graph','trend','market movement'],a:()=>`The **Analytics** page shows a live line chart of every active brand. Each brand has an index near 100 that moves with every update, and confirmed sales push it up. Tap a brand name above the chart to hide or show its line. The movement is simulated and is not real stock-market data.\n${GO('#/chart','Open Analytics')}`},
@@ -678,7 +665,7 @@ const KB=[
 {k:['menu','where is','navigate','tabs'],a:()=>`Use the sidebar on a computer, or the bottom tabs on a phone: Home, Market, Orders, Menu and Settings. **Menu** holds everything else, like Create store, Products, Analytics and Connect store.\n${GO('#/menu','Open Menu')}`},
 {k:['data','device','browser','other people','share data','database','lost my','disappear'],a:()=>`This version saves data in the browser you are using, so other people's phones do not see your store yet. Use **Settings → Download backup** regularly. The owner can connect a shared database to make everything visible to everyone.`},
 {k:['balance','withdraw','withdrawal','cash out','my earnings','wallet','send my money','payout to'],a:()=>`Your **Balance** grows by the order total minus the ${Math.round(rate()*100)}% commission when a buyer confirms delivery. Tap **Withdraw** to send it to a bank account (Opay or any bank) or a crypto wallet (USDT). The admin sends the money and marks it paid. POS sales go straight to you and do not add to the balance.\n${GO('#/wallet','Open Balance')}`},
-{k:['crypto','usdt','bnb','international','outside nigeria','foreign','dollar','binance'],a:()=>`If you are outside Nigeria, pay the listing fee (or an order) with **USDT on the BNB Smart Chain (BEP-20)** to the address shown on the payment screen. Send only USDT on that network, then enter your transaction hash as the reference.\n${GO('#/store','Open Create store')}`},
+{k:['crypto','usdt','bnb','international','outside nigeria','foreign','dollar','binance'],a:()=>`Payments on VTX Online are made online through Paystack with a card, bank transfer or USSD. Foreign cards work if they are enabled on the store's Paystack account. Withdrawals can go to a bank account or a crypto wallet.\n${GO('#/wallet','Open Balance')}`},
 {k:['pos','point of sale','design','designing','design studio','mockup'],a:()=>`**VTX POS** (open /pos on this site) uses the same login. Staff can sell in person, manage products, see online orders, and use the **Design studio** to design clothes, bags, shoes and more, then save the design as a product.`},
 {k:['who are you','what are you','vtx ai','ai'],a:()=>`I am **VTX AI**, the in-app guide. Ask me how anything works and I will explain it and take you to the right page.`}
 ];
@@ -714,6 +701,16 @@ function drawAI(){
  const m=$('#aim');if(m)m.scrollTop=m.scrollHeight;if(AIopen&&!AIbusy&&innerWidth>900)$('#aiq')?.focus();
 }
 
+/* ---------- Paystack ---------- */
+function loadPaystack(){return new Promise((res,rej)=>{if(window.PaystackPop)return res();const sc=document.createElement('script');sc.src='https://js.paystack.co/v1/inline.js';sc.onload=()=>res();sc.onerror=()=>rej(new Error('Could not load the payment window. Check your connection and try again.'));document.head.appendChild(sc)})}
+async function payNow(o,kind){
+ await loadPaystack();
+ await new Promise(resolve=>{let done=false;
+  const h=PaystackPop.setup({key:S.settings.paystackKey,email:o.email,amount:Math.round(o.amount*100),currency:'NGN',ref:o.reference,
+   callback:function(r){done=true;confirmPay(o.reference,kind).then(resolve)},
+   onClose:function(){if(!done){toast(kind==='fee'?'Payment window closed. Tap Pay when you are ready.':'Payment window closed. You can pay from Orders.');resolve()}}});
+  h.openIframe()})}
+async function confirmPay(ref,kind){try{toast('Confirming your payment…');const j=await api(kind==='fee'?'fee.verify':'order.verify',{reference:ref});await sync(true);toast(j.paid?(kind==='fee'?'Payment received. Your store is publishing.':'Payment received. Thank you!'):(j.error||'We have not received the payment yet. This page updates by itself once it is confirmed.'),!j.paid)}catch(e){toast(e.message,1)}}
 /* ---------- wallet ---------- */
 let W=null,AW=null;
 async function loadWallet(){try{W=await api('wallet.state')}catch(e){toast(e.message,1)}if(route().name==='wallet')render()}
@@ -798,10 +795,9 @@ function notifyNew(prev,first){
  const u=me();if(!u)return;const mb=myBrand();
  if(isAdmin()){const n=S.payments.filter(p=>p.status==='pending').length;if(!first&&n>(UI.pp||0))toast('New brand listing payment to review');UI.pp=n}
  if(first)return;
- const pid=new Set(prev.map(o=>o.id)),pm=new Map(prev.map(o=>[o.id,o.status]));
- const fresh=S.orders.filter(o=>!pid.has(o.id)&&o.buyerId!==u.id&&(isAdmin()||(mb&&o.brandId===mb.id)));
- if(fresh.length)toast(`New order ${fresh[0].id} · ${money(fresh[0].subtotal)}${fresh.length>1?` (+${fresh.length-1} more)`:''}`);
- else S.orders.filter(o=>mb&&o.brandId===mb.id&&o.buyerId!==u.id&&o.status==='paid'&&pm.get(o.id)==='verifying').forEach(o=>toast(`Order ${o.id} is paid. Ship it!`));
+ const pm=new Map(prev.map(o=>[o.id,o.status]));
+ const paid=S.orders.filter(o=>o.status==='paid'&&pm.get(o.id)!=='paid'&&o.buyerId!==u.id&&(isAdmin()||(mb&&o.brandId===mb.id)));
+ if(paid.length)toast(`New paid order ${paid[0].id} · ${money(paid[0].subtotal)}${paid.length>1?` (+${paid.length-1} more)`:''}`);
 }
 function renderBoot(){
  $('#app').innerHTML=SYNCERR?`<div class="authw"><div class="authc"><div class="lg0"><img src="${LOGO}" alt=""></div><div class="card"><h2>Can't reach the server</h2><p class="mut" style="margin:6px 0 12px">${esc(SYNCERR)}</p><button class="btn p full" data-a="retry">Try again</button></div></div></div>`
@@ -847,6 +843,8 @@ const A={
  mtab(a){UI.mtab=a.dataset.v;render()},
  cat(a){UI.cat=a.dataset.v;render()},
  otab(a){UI.otab=a.dataset.v;render()},
+ payfee(){safe(async()=>{const j=await api('fee.init');if(j.free){await sync(true);return}await payNow({reference:j.reference,amount:j.amount,email:j.email},'fee')})},
+ repay(a){const ref=a.dataset.ref,os=S.orders.filter(o=>o.payRef===ref);if(!os.length)return;const amt=os.reduce((t,o)=>t+o.subtotal,0);safe(()=>payNow({reference:ref,amount:amt,email:me().email},'order'))},
  atab(a){UI.atab=a.dataset.v;if(UI.atab==='withdrawals')loadWd();render()},
  wm(a){const v=a.dataset.v;$('#wmeth').value=v;$('#wb').hidden=v!=='bank';$('#wc').hidden=v!=='crypto';document.querySelectorAll('#wb input,#wc input,#wc select').forEach(i=>{i.disabled=i.closest('#wb')?v!=='bank':v!=='crypto'});document.querySelectorAll('.wmc').forEach(c=>c.classList.toggle('on',c.dataset.v===v))},
  withdraw(){openWithdraw()},
@@ -899,14 +897,15 @@ const F={
  signup(f,d){return safe(async()=>{const j=await api('signup',{name:d.get('name').trim(),email:d.get('email').trim().toLowerCase(),phone:d.get('phone').trim(),pass:await sha(d.get('password'))});setToken(j.token);await sync(true);toast('Account created');const n=UI.next||'#/home';UI.next='#/home';go(n)})},
  profile(f,d){return safe(async()=>{await api('profile',{name:d.get('name'),phone:d.get('phone'),email:d.get('email')||''});await sync(true);toast('Profile saved')})},
  pass(f,d){return safe(async()=>{await api('password',{old:await sha(d.get('old')),new:await sha(d.get('new'))});f.reset();toast('Password updated')})},
- acct(f,d){return safe(async()=>{await api('settings',{account:{name:d.get('name'),bank:d.get('bank'),number:d.get('number')},crypto:{address:d.get('cryptoaddr').trim()},minWithdraw:+d.get('minw')||0,fee:+d.get('fee'),commission:Math.min(1,Math.max(0,+d.get('comm')/100)),usdRate:+d.get('usd')||0});await sync(true);toast('Platform settings saved')})},
+ acct(f,d){return safe(async()=>{await api('settings',{account:{name:d.get('name'),bank:d.get('bank'),number:d.get('number')},minWithdraw:+d.get('minw')||0,fee:+d.get('fee'),commission:Math.min(1,Math.max(0,+d.get('comm')/100)),usdRate:+d.get('usd')||0});await sync(true);toast('Platform settings saved')})},
  brand(f,d){return safe(async()=>{await api('brand.create',{name:d.get('name'),category:d.get('category'),description:d.get('description'),logo:logoDraft||''});logoDraft=null;await sync(true);toast(isAdmin()?'Brand created':'Brand created. Now pay the listing fee.')})},
  paylist(f,d){return safe(async()=>{await api('pay.submit',{ref:d.get('ref'),proof:proofDraft||''});proofDraft=null;await sync(true);toast('Payment submitted for review')})},
  product(f,d){return safe(async()=>{await api('product.save',{id:d.get('id')||'',data:{name:d.get('name'),price:+d.get('price'),stock:+d.get('stock'),category:d.get('category'),description:d.get('description'),images:[...pImgs]}});closeModal();await sync(true);toast('Saved. Publishing your product…')})},
- checkout(f,d){return safe(async()=>{const L=cartLines();if(!L.length)return;
+ checkout(f,d){return safe(async()=>{const L=cartLines();if(!L.length)return;if(!S.settings.payOn)throw new Error('Online payment is not set up yet. Please try again later.');
   const ship={name:d.get('name'),phone:d.get('phone'),address:d.get('address'),city:d.get('city'),state:d.get('state'),landmark:d.get('landmark'),lat:d.get('lat'),lng:d.get('lng')};
-  await api('order.create',{items:L.map(x=>({pid:x.c.pid,qty:x.c.qty})),ship,ref:d.get('ref'),code:UI.code?UI.code.code:''});
-  UI.code=null;UI.draft=null;S.cart=[];persist('cart');UI.otab='mine';await sync(true);toast('Order placed. We will confirm your payment.');go('#/orders')})},
+  const j=await api('order.create',{items:L.map(x=>({pid:x.c.pid,qty:x.c.qty})),ship,code:UI.code?UI.code.code:''});
+  UI.code=null;UI.draft=null;S.cart=[];persist('cart');UI.otab='mine';await sync(true);go('#/orders');
+  await payNow({reference:j.reference,amount:j.total,email:me().email},'order')})},
  conn(f,d){return safe(async()=>{const platform=d.get('platform'),url=d.get('url').trim(),mb=myBrand();let status='requested',count=0;
   if(platform==='Shopify'){
    if(!mb||mb.status!=='active')throw new Error('Open and activate your brand before importing from Shopify.');
