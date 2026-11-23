@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VTXOnline Shopping</title>
+<meta name="theme-color" content="#0a0a0a">
+<link rel="icon" href="">
+<style>
+:root{--g:#111111;--gd:#000000;--ink:#303030;--mut:#616161;--line:#e3e3e3;--bg:#f3f3f1;--card:#fff;--top:#0a0a0a;--red:#c70a24;--blue:#005bd3;--r:12px}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+h1{font-size:20px;line-height:28px;margin:0;font-weight:650}
+h2{font-size:15px;margin:0 0 4px;font-weight:650}
+h3{font-size:14px;margin:0;font-weight:650}
+p{margin:0}
+.mut{color:var(--mut)}.sm{font-size:12px}.b{font-weight:650}.right{text-align:right}.grow{flex:1;min-width:0}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+/* top bar */
+.top{position:sticky;top:0;z-index:30;height:56px;background:var(--top);color:#fff;display:flex;align-items:center;gap:12px;padding:0 16px}
+.logo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:650;font-size:15px;white-space:nowrap}
+.logo:hover{text-decoration:none}
+.logo img{width:32px;height:32px;border-radius:8px;background:#fff;object-fit:cover}
+.search{flex:1;max-width:520px;margin:0 auto;position:relative}
+.search input{width:100%;height:36px;border-radius:10px;border:0;background:#303030;color:#fff;padding:0 12px 0 36px}
+.search input::placeholder{color:#b5b5b5}
+.search svg{position:absolute;left:10px;top:8px;width:20px;height:20px;color:#b5b5b5}
+.tbtn{position:relative;background:none;border:0;color:#fff;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;cursor:pointer}
+.tbtn:hover{background:#303030}
+.cnt{position:absolute;top:3px;right:2px;background:var(--g);color:#fff;font-size:10px;min-width:17px;height:17px;border-radius:9px;display:grid;place-items:center;padding:0 4px;font-weight:650}
+.avatar{width:32px;height:32px;border-radius:50%;background:#e3e3e3;color:#303030;display:grid;place-items:center;font-weight:650;font-size:12px;overflow:hidden;flex:none}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.signin{background:#fff;color:#1a1a1a;border-radius:10px;padding:7px 12px;font-weight:600;border:0;cursor:pointer}
+/* layout */
+.layout{display:flex;min-height:calc(100vh - 56px)}
+.side{width:236px;flex:none;padding:12px 8px;position:sticky;top:56px;height:calc(100vh - 56px);overflow:auto}
+.nav{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;color:var(--ink);font-weight:550;margin-bottom:2px;position:relative}
+.nav:hover{background:#e8e8e8;text-decoration:none}
+.nav.on{background:#fff;box-shadow:0 1px 0 rgba(26,26,26,.07),0 0 0 1px rgba(0,0,0,.05)}
+.nav .cnt{position:static;margin-left:auto}
+.nav-sep{font-size:12px;color:var(--mut);padding:14px 10px 6px;font-weight:550}
+main{flex:1;min-width:0;padding:20px 24px 60px}
+.wrap{max-width:1040px;margin:0 auto}
+.bottom{display:none}
+@media(max-width:900px){
+ .side{display:none}
+ main{padding:14px 12px 96px}
+ .bottom{display:flex;position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);z-index:30;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+ .bottom a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mut);padding:4px 0;position:relative;font-weight:550}
+ .bottom a.on{color:var(--g)}.bottom a:hover{text-decoration:none}
+ .bottom .cnt{top:0;right:calc(50% - 22px)}
+ .logo span{display:none}
+ .hide-m{display:none}
+}
+/* cards */
+.card{background:var(--card);border-radius:var(--r);box-shadow:0 1px 0 rgba(26,26,26,.07),0 0 0 1px rgba(0,0,0,.05);padding:16px;margin-bottom:16px}
+.card.flush{padding:0;overflow:hidden}
+.page-h{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.page-h .grow{min-width:120px}
+.row{display:flex;align-items:center;gap:12px}
+.row.wrap2{flex-wrap:wrap}
+.gap8{gap:8px}
+.col{display:flex;flex-direction:column;gap:12px}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.pgrid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+@media(max-width:600px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}.g2.keep{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}.pgrid{grid-template-columns:repeat(2,1fr);gap:10px}}
+.hr{height:1px;background:var(--line);margin:12px 0;border:0}
+.item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);color:inherit}
+.item:last-child{border-bottom:0}
+a.item:hover{background:#fafafa;text-decoration:none}
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;border:0;background:#fff;color:var(--ink);font-weight:600;cursor:pointer;box-shadow:inset 0 -1px 0 rgba(0,0,0,.2),inset 0 0 0 1px rgba(0,0,0,.1);white-space:nowrap}
+.btn:hover{background:#fafafa;text-decoration:none}
+.btn.p{background:#303030;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+.btn.p:hover{background:#1a1a1a}
+.btn.g{background:var(--g);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+.btn.g:hover{background:var(--gd)}
+.btn.d{color:var(--red)}
+.btn.lg{height:40px;padding:0 18px;font-size:14px;border-radius:10px}
+.btn.sm{height:28px;padding:0 10px;font-size:12px}
+.btn.full{width:100%}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn svg.i{width:16px;height:16px}
+/* forms */
+label.f{display:block;font-size:13px;font-weight:550;margin-bottom:12px}
+label.f>span{display:block;margin-bottom:4px}
+.in,select.in,textarea.in{width:100%;min-height:34px;padding:6px 10px;border-radius:8px;border:1px solid #8a8a8a;background:#fff}
+.in:hover{background:#fafafa}
+.in:focus{outline:2px solid var(--blue);outline-offset:0;border-color:var(--blue)}
+textarea.in{min-height:90px;resize:vertical}
+.hint{font-size:12px;color:var(--mut);margin-top:4px;font-weight:400}
+/* badges */
+.bd{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:8px;font-size:12px;font-weight:550;background:#e3e3e3;color:#303030;white-space:nowrap}
+.bd.ok{background:#cdfee1;color:#0c5132}.bd.wa{background:#ffeb78;color:#4f4700}.bd.cr{background:#fedad9;color:#8e0b21}.bd.in{background:#a4e8f2;color:#00434e}
+.up{color:#0c5132}.dn{color:#8e0b21}
+/* banners */
+.ban{display:flex;gap:10px;padding:12px 14px;border-radius:10px;margin-bottom:16px;font-size:13px;background:#eaf4ff;color:#00284f}
+.ban.wa{background:#fff5ea;color:#4a2b00}.ban.ok{background:#e0f5ec;color:#0c5132}.ban.cr{background:#fff1f0;color:#8e0b21}
+/* hero */
+.hero{background:#1a1a1a;color:#fff;border-radius:16px;padding:24px;display:flex;align-items:center;gap:20px;margin-bottom:16px;overflow:hidden;position:relative}
+.hero img{width:132px;height:132px;border-radius:18px;background:#fff;object-fit:cover;flex:none}
+.hero h1{font-size:26px;line-height:32px;margin-bottom:6px}
+.hero p{color:#c9c9c9;margin-bottom:14px;max-width:46ch}
+@media(max-width:600px){.hero{flex-direction:column;align-items:flex-start;padding:18px}.hero img{width:84px;height:84px}.hero h1{font-size:21px;line-height:27px}}
+.stat{padding:14px 16px}.stat .n{font-size:22px;font-weight:650;margin-top:2px}
+/* product cards */
+.pc{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 0 rgba(26,26,26,.07),0 0 0 1px rgba(0,0,0,.05);display:flex;flex-direction:column}
+.pc .im{aspect-ratio:1;background:#f1f1f1;display:block}
+.pc .im img{width:100%;height:100%;object-fit:cover;display:block}
+.pc .bd2{padding:10px 12px 12px;display:flex;flex-direction:column;gap:2px;flex:1}
+.pc .nm{font-weight:600;color:var(--ink);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc .pr{font-weight:650}
+.pc .btn{margin-top:8px}
+.thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;background:#f1f1f1;flex:none;border:1px solid var(--line)}
+.chips{display:flex;gap:8px;overflow:auto;padding-bottom:4px;margin-bottom:12px}
+.chip{border:0;background:#e3e3e3;border-radius:8px;padding:5px 12px;font-weight:550;cursor:pointer;white-space:nowrap}
+.chip.on{background:#303030;color:#fff}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow:auto}
+.tab{background:none;border:0;padding:8px 12px;font-weight:600;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tab.on{color:var(--ink);border-color:var(--ink)}
+/* product page */
+.pp{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:700px){.pp{grid-template-columns:1fr}}
+.pp .main{aspect-ratio:1;border-radius:12px;background:#f1f1f1;width:100%;object-fit:cover}
+.thumbs{display:flex;gap:8px;margin-top:8px}
+.thumbs img{width:60px;height:60px;border-radius:8px;object-fit:cover;cursor:pointer;border:2px solid transparent}
+.thumbs img.on{border-color:var(--ink)}
+.qty{display:inline-flex;align-items:center;border:1px solid #8a8a8a;border-radius:8px;overflow:hidden}
+.qty button{width:32px;height:32px;border:0;background:#fff;cursor:pointer;font-size:16px}
+.qty span{min-width:30px;text-align:center;font-weight:600}
+/* progress */
+.bar{height:6px;border-radius:3px;background:#e3e3e3;overflow:hidden}.bar i{display:block;height:100%;background:var(--g)}
+.step{display:flex;gap:12px;align-items:flex-start;padding:10px 0}
+.dot{width:22px;height:22px;border-radius:50%;border:2px dashed #8a8a8a;flex:none;display:grid;place-items:center;margin-top:1px}
+.dot.done{background:#303030;border:0;color:#fff}.dot svg{width:13px;height:13px;stroke-width:3}
+/* chart */
+.chartwrap{position:relative;height:340px}
+#chart{width:100%;height:100%;display:block}
+.tip{position:absolute;pointer-events:none;background:#1a1a1a;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;display:none;z-index:2;min-width:130px}
+.legend{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.lg{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;font-weight:550;font-size:12px}
+.lg i{width:9px;height:9px;border-radius:50%}.lg.off{opacity:.4}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--g)}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--g);animation:pl 1.6s infinite}
+@keyframes pl{50%{opacity:.3}}
+@media(prefers-reduced-motion:reduce){.live i{animation:none}}
+/* modal & toast */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:520px;max-height:92vh;overflow:auto;box-shadow:0 20px 40px rgba(0,0,0,.3)}
+.modal .mh{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);font-weight:650}
+.modal .mb{padding:16px}.modal .mf{padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#303030;color:#fff;padding:10px 16px;border-radius:10px;z-index:80;font-weight:550;display:none;max-width:90vw;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+#toast.err{background:#8e0b21}
+/* auth */
+.authw{min-height:100vh;display:grid;place-items:center;padding:20px;background:#f1f1f1}
+.authc{width:100%;max-width:400px}
+.authc .lg0{text-align:center;margin-bottom:16px}
+.authc .lg0 img{width:84px;height:84px;border-radius:20px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.1)}
+.pay{background:#f7f7f7;border-radius:10px;padding:12px;border:1px dashed #b5b5b5}
+.pay .l{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0}
+.chip2{display:inline-flex;align-items:center;gap:8px}
+.proof{max-width:100%;max-height:220px;border-radius:8px;border:1px solid var(--line);margin-top:8px}
+.empty{text-align:center;padding:36px 16px;color:var(--mut)}
+.empty h2{color:var(--ink)}
+.pl{display:inline-block;padding:2px 8px;border-radius:6px;background:#f1f1f1;font-size:11px;font-weight:600;color:#616161}
+.search kbd{position:absolute;right:8px;top:8px;font:11px/1 inherit;background:#424242;color:#b5b5b5;border-radius:5px;padding:4px 6px}
+.chipstore{display:flex;align-items:center;gap:8px;color:#fff;font-weight:550;padding:4px 10px 4px 4px;border-radius:10px;background:#303030;max-width:200px}
+.chipstore:hover{background:#3a3a3a;text-decoration:none}.chipstore span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav svg.i{color:#5c5f62}.nav.on svg.i{color:#1a1a1a}
+
+/* VTX black and silver theme */
+body{background:var(--bg)}
+.top{background:linear-gradient(180deg,#141414,#0a0a0a);border-bottom:1px solid #2a2a2a}
+.logo{letter-spacing:.06em}
+.tbtn .cnt,.top .cnt{background:#e6e7e9;color:#111}
+.side{background:#ecece9;border-right:1px solid #dcdcd8}
+.nav:hover{background:#e0e0dc}
+.nav.on{background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.08)}
+.nav.on::before{content:"";position:absolute;left:-8px;top:8px;bottom:8px;width:3px;border-radius:2px;background:linear-gradient(180deg,#111,#8f9296)}
+.btn.p,.btn.g{background:linear-gradient(180deg,#3b3b3b,#111);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 1px 2px rgba(0,0,0,.3)}
+.btn.p:hover,.btn.g:hover{background:linear-gradient(180deg,#4a4a4a,#1a1a1a)}
+.btn{background:linear-gradient(180deg,#fff,#f1f1f0)}
+.hero{background:linear-gradient(120deg,#070707 0%,#1c1c1c 55%,#5a5c5f 100%);border:1px solid #2a2a2a}
+.hero::after{content:"";position:absolute;right:12%;top:-30%;width:90px;height:170%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);transform:rotate(22deg);pointer-events:none}
+.hero h1{letter-spacing:-.01em;background:linear-gradient(180deg,#fff,#b9bcc0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero img{box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.bar i{background:linear-gradient(90deg,#111,#8f9296)}
+.dot.done{background:#111}
+.chip.on{background:#111}
+.tab.on{border-color:#111}
+.authw{background:radial-gradient(circle at 50% 0%,#fff,#e9e9e6)}
+.authc .lg0 img{box-shadow:0 4px 18px rgba(0,0,0,.15)}
+.pc .im{background:#ecece9}
+.card{box-shadow:0 1px 0 rgba(26,26,26,.06),0 0 0 1px rgba(0,0,0,.06)}
+.stat .n{letter-spacing:-.01em}
+.ban{background:#efefed;color:#1a1a1a}
+.live{color:#111}.live i{background:#111}
+
+.spin{display:inline-block;width:10px;height:10px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation:none}}
+button.nav{width:100%;border:0;background:none;text-align:left;font:inherit;font-weight:550;cursor:pointer}
+.annc{background:#111;color:#fff;text-align:center;padding:8px 12px;font-size:13px;font-weight:550}
+.bannerimg{width:100%;height:160px;object-fit:cover;display:block}
+.ph0{background:linear-gradient(120deg,#070707,#1c1c1c 55%,#6a6c70)}
+.aibtn{position:fixed;right:18px;bottom:22px;z-index:45;width:52px;height:52px;border-radius:50%;border:0;color:#fff;background:linear-gradient(180deg,#3b3b3b,#0a0a0a);box-shadow:0 6px 18px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.3);display:grid;place-items:center;cursor:pointer}
+.aip{position:fixed;right:18px;bottom:84px;z-index:50;width:390px;max-width:calc(100vw - 24px);height:min(580px,calc(100vh - 110px));background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden}
+.aip[hidden]{display:none}
+.aih{display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(120deg,#070707,#262626 60%,#5a5c5f);color:#fff}
+.aih img{width:32px;height:32px;border-radius:8px;background:#fff;object-fit:cover}.aih .tbtn{width:32px;height:32px}
+.aim{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#f6f6f4}
+.am{max-width:88%;padding:9px 12px;border-radius:14px;font-size:13.5px;line-height:1.5}
+.am.a{background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.07);align-self:flex-start;border-bottom-left-radius:4px}
+.am.u{background:#111;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.aibtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.aiq{display:flex;gap:6px;overflow:auto;padding:8px 12px;border-top:1px solid var(--line)}
+.aiq .chip{font-size:12px;padding:4px 10px}
+.aif{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
+@media(max-width:900px){.aibtn{bottom:88px;right:14px;width:48px;height:48px}.aip{left:8px;right:8px;bottom:8px;top:64px;width:auto;max-width:none;height:auto}}
+.usd{display:block;font-size:12px;color:var(--mut);font-weight:500}
+.b.right .usd,.right .usd{text-align:right}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+<div id="toast" role="status"></div>
+<div id="ai"></div>
+<script>
+const LOGO='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAFoAWgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD7IoooqCgooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKK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DKQcDryBXT3EnlQSSgbtiFseuBWP4L8LaJ4P0RdH0CzNta+Y8zlpGkklkc5aR3YlnYnqSSa17pDJazRqMlkYD6kUAeSeGfi9rd3ovhbxJr3g2DT/AA/4luYLW2u7bVPPkgkmJWLzIjGvylhglScZ6V6/XjvwV+DunaJ4Q8KXHim11GfXtJhSQWtzqstxbWtwMgNHFvMQIB4IHGeK9ipsEcp8VfGD+CfCbara6XJq+oz3EVpp+nxybGup5GwEDYOOAzE46Ka1/COu2XibwvpniHTm3Wmo2sdxHzyAwztPuDkH3FcN8QvCfivxZ8TNBuLPUpNC0bQLWW7gvY44Z2mvpf3YXy5MgBIt53EdX4q18E/DXiHwbaa94a1aT7XpkGpvc6Re/u182GceZIhjT7myUycYAwRijoB6H3rxmH4yeIV8NS+Mr3wNAnhS31KSyuLuHVg9zEqXJtzL5JjAI3DOA2cV7NXzfpvwd12y8K6ZrD6ZdX+sWHie41C70G41QtZ31q13Iy4jL+UsiqySqePmX5uTQgZ9IA55rjvin4w1DwjaaINK0aLVr7WNVj02CGW7+zorOjsGL7W4+T0712I5APSvMv2hPC2peKtG8ORWHh8eIItP16G9vbD7SkBlgWORWAZyBnLL3pLcDsPCF/4nvredvE2g2OkSq4EK2uo/axIuOSTsTbg9ua3a4z4T6f8A2XpV3ZR+BJPB8HnCRYGvorkTMRgsCjtjGAOcV2dDA5j4beLD4w0a+1E2P2L7Lqt5p+zzN+7yJmj35wMZ25x2rp68h+GCeOvCLahod18P7u5tLrxDe3a6hDqlqEWGe4Zw5Qvv4VskYzXr1NgFGD6UVkT+GtHnleWSC4LuxZiLyYDJ9g2BSA18H0pcH0rD/wCEV0P/AJ4XP/gdP/8AF0n/AAimh/8APvdf+B0//wAXT0A3ce1GD6Vh/wDCKaJ/zwuv/A6f/wCLpf8AhFdE/wCeF1/4HT//ABdGgG3g+lGD6Vh/8Iron/PC5/8AA2f/AOLpP+EU0P8A54XX/gdP/wDF0aAboFBFYY8K6KP+WF1/4HT/APxdXdM0mx013e0SZS4AbfcSSf8AoTHFLQC9RRRQAUUUUDCiiigAooooAKUUlFACkUlFAoAKKKKACiiigAooooAKKKKACiiigAooooAKKO1FABRQKKACiiigQUUv40lAwooooAMUUtJQAH2ooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD/2Q==';
+document.querySelector('link[rel=icon]').href=LOGO;
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'₦'+Number(n||0).toLocaleString('en-NG',{maximumFractionDigits:2});
+const uid=p=>p+Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3);
+const fdate=t=>new Date(t).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+const CATS=['Fashion','Shoes','Beauty','Accessories','Electronics','Home','Food','Other'];
+const PAL=['#111111','#9a9da1','#3d4045','#c4c7cb','#5b6770','#6e7378','#25282c','#aeb2b6','#4a4f55'];
+const N=48;
+const I={
+home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+bag:'<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+cart:'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>',
+box:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+trend:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+menu:'<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>',
+set:'<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
+link:'<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+check:'<polyline points="20 6 9 17 4 12"/>',
+x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+pin:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>',
+edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+store:'<path d="M3 9l1-5h16l1 5"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 12v8h14v-8"/>',
+wallet:'<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>',
+users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+tag:'<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>',
+mega:'<path d="M3 11v2a1 1 0 0 0 1 1h3l7 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M18 9a4 4 0 0 1 0 6"/>',
+spark:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17l.7 1.8 1.8.7-1.8.7L19 22l-.7-1.8-1.8-.7 1.8-.7z"/>'
+};
+const ic=n=>`<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${I[n]||''}</svg>`;
+
+/* ---------- storage ---------- */
+const store={get(k,d){try{const v=localStorage.getItem('vtx_'+k);return v?JSON.parse(v):d}catch(e){return d}},
+ set(k,v){try{localStorage.setItem('vtx_'+k,JSON.stringify(v));return true}catch(e){toast('Browser storage is full. Use smaller photos or delete old items.',1);return false}}};
+let S={};
+const KEYS=['users','brands','products','orders','payments','connections','discounts'];
+function load(){S={users:[],brands:[],products:[],orders:[],payments:[],connections:[],discounts:[],settings:{fee:1500,commission:0.1,usdRate:0,account:{name:'',bank:'',number:''}},series:{},cart:store.get('cart',[]),session:null}}
+const persist=(...ks)=>{if(ks.includes('cart'))store.set('cart',S.cart)};
+let UI={q:'',cat:'All',sort:'new',mtab:'products',otab:null,atab:'overview',hidden:[],next:'#/home'};
+
+async function sha(p){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('vtx:'+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){return'x'+btoa(unescape(encodeURIComponent(p)))}}
+
+function ph(name){let h=0;for(const c of String(name))h=(h*31+c.charCodeAt(0))%360;const t=(String(name).match(/\b\w/g)||['V']).slice(0,2).join('').toUpperCase();
+ const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='hsl(${h},16%,90%)'/><stop offset='1' stop-color='hsl(${h},20%,74%)'/></linearGradient></defs><rect width='600' height='600' fill='url(#g)'/><text x='50%' y='56%' font-family='Arial' font-weight='700' font-size='150' fill='rgba(0,0,0,.3)' text-anchor='middle'>${t}</text></svg>`;
+ return'data:image/svg+xml;utf8,'+encodeURIComponent(svg)}
+const pimg=p=>(p.images&&p.images[0])||ph(p.name);
+
+function ensureSeries(){}
+const idx=id=>{const a=S.series[id];return a?a[a.length-1]:100};
+const chg=id=>{const a=S.series[id];return a&&a.length>1?(a[a.length-1]/a[0]-1)*100:0};
+
+/* ---------- helpers ---------- */
+const me=()=>S.users.find(u=>u.id===S.session)||null;
+const isAdmin=()=>me()?.role==='admin';
+const myBrand=()=>{const u=me();return u?S.brands.find(b=>b.ownerId===u.id):null};
+const brandOf=id=>S.brands.find(b=>b.id===id);
+const live=()=>S.brands.filter(b=>b.status==='active');
+const liveProducts=()=>S.products.filter(p=>{const b=brandOf(p.brandId);return b&&b.status==='active'&&(p.status||'active')==='active'});
+const rate=()=>S.settings.commission??.1;
+const counted=o=>['paid','shipped','delivered'].includes(o.status);
+function toast(m,err){const t=$('#toast');t.textContent=m;t.className=err?'err':'';t.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display='none',3200)}
+function go(h){if(location.hash===h)render();else location.hash=h}
+function badge(t,k=''){return`<span class="bd ${k}">${esc(t)}</span>`}
+function initials(n){return(String(n).match(/\b\w/g)||['?']).slice(0,2).join('').toUpperCase()}
+function av(u){return`<span class="avatar">${u?.role==='admin'?`<img src="${LOGO}" alt="">`:esc(initials(u?.name||'?'))}</span>`}
+function spark(a,c,w=80,h=26){if(!a||a.length<2)return'';const mn=Math.min(...a),mx=Math.max(...a)||1,d=mx-mn||1;const pts=a.map((v,i)=>`${(i/(a.length-1)*w).toFixed(1)},${(h-2-((v-mn)/d)*(h-4)).toFixed(1)}`).join(' ');return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${c}" stroke-width="1.8" stroke-linejoin="round"/></svg>`}
+function pct(n){const c=n>=0?'up':'dn';return`<span class="${c} b">${n>=0?'▲':'▼'} ${Math.abs(n).toFixed(2)}%</span>`}
+function compress(file,max=800,q=.72){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q))};im.onerror=rej;im.src=r.result};r.onerror=rej;r.readAsDataURL(file)})}
+function openModal(title,body,foot=''){$('#modal').innerHTML=`<div class="ov" data-a="closem"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="mh"><span class="grow">${esc(title)}</span><button class="tbtn" style="color:#303030" data-a="closem" aria-label="Close">${ic('x')}</button></div><div class="mb">${body}</div>${foot?`<div class="mf">${foot}</div>`:''}</div></div>`}
+const closeModal=()=>{$('#modal').innerHTML=''};
+
+/* ---------- routing ---------- */
+function route(){const h=(location.hash.slice(2)||'home');const[p]=h.split('?');const[name,id]=p.split('/');return{name:name||'home',id}}
+function guard(r){
+ const need=['orders','wallet','sell','store','products','customers','discounts','marketing','admin','connect','checkout'];
+ if(need.includes(r.name)&&!me()){UI.next='#/'+r.name;return'auth'}
+ if(r.name==='admin'&&!isAdmin())return'home';
+ return r.name;
+}
+function render(){if(!LOADED){renderBoot();return}
+ const r=route();const n=guard(r);if(n!==r.name){if(n==='auth'){toast('Sign in to continue.')}r.name=n}
+ let v;
+ try{
+ switch(r.name){
+  case'auth':v=viewAuth();break;case'market':v=viewMarket();break;case'product':v=viewProduct(r.id);break;case'brand':v=viewBrand(r.id);break;
+  case'cart':v=viewCart();break;case'checkout':v=viewCheckout();break;case'orders':v=viewOrders();break;case'chart':v=viewChart();break;
+  case'menu':v=viewMenu();break;case'settings':v=viewSettings();break;case'connect':v=viewConnect();break;case'sell':case'store':r.name='store';v=viewStore();break;case'products':v=viewProducts();break;case'customers':v=viewCustomers();break;case'discounts':v=viewDiscounts();break;case'marketing':v=viewMarketing();break;case'wallet':v=viewWallet();break;case'admin':v=viewAdmin();break;
+  default:r.name='home';v=viewHome()}
+ }catch(e){console.error(e);v=`<div class="card empty"><h2>Something went wrong</h2><p>${esc(e.message)}</p><p style="margin-top:12px"><a class="btn" href="#/home">Back to Home</a></p></div>`}
+ $('#app').innerHTML=r.name==='auth'?v:shell(v,r.name);
+ if(r.name==='chart')paintChart();
+}
+addEventListener('hashchange',()=>{closeModal();render();scrollTo(0,0)});
+
+function pendingCount(){if(!isAdmin())return 0;return S.orders.filter(o=>o.status==='verifying').length+S.payments.filter(p=>p.status==='pending').length+(S.wd||0)}
+function shell(content,active){
+ const u=me(),cc=S.cart.reduce((a,c)=>a+c.qty,0),pc=pendingCount();
+ const items=[['home','Home','home'],['orders','Orders','box'],['wallet','Balance','wallet'],['products','Products','bag'],['customers','Customers','users'],['chart','Analytics','trend'],['marketing','Marketing','mega'],['discounts','Discounts','tag'],['market','Market','store','Sales channels'],['store','Create store','plus'],['connect','Connect store','link','Apps'],['ai','VTX AI','spark'],['menu','Menu','menu']];
+ const side=items.map(([k,l,i,sep])=>(sep?`<div class="nav-sep">${sep}</div>`:'')+(k==='ai'?`<button class="nav" data-a="ai">${ic(i)}${l}</button>`:`<a class="nav ${active===k?'on':''}" href="#/${k}">${ic(i)}${l}${k==='orders'&&pc?`<span class="cnt">${pc}</span>`:''}</a>`)).join('')
+  +(isAdmin()?`<a class="nav ${active==='admin'?'on':''}" href="#/admin">${ic('shield')}Admin${pc?`<span class="cnt">${pc}</span>`:''}</a>`:'')
+  +`<div class="nav-sep">Preferences</div><a class="nav ${active==='settings'?'on':''}" href="#/settings">${ic('set')}Settings</a>`;
+ const bot=[['home','Home','home'],['market','Market','bag'],['orders','Orders','box'],['menu','Menu','menu'],['settings','Settings','set']].map(([k,l,i])=>`<a class="${active===k?'on':''}" href="#/${k}">${ic(i)}${l}${k==='orders'&&pc?`<span class="cnt">${pc}</span>`:''}</a>`).join('');
+ return`<header class="top"><a class="logo" href="#/home"><img src="${LOGO}" alt="VTX"><span>VTXOnline</span></a>
+ <form class="search" data-f="search" role="search"><span>${ic('search')}</span><input id="q" type="search" placeholder="Search" value="${esc(UI.q)}" aria-label="Search"><kbd class="hide-m">Enter</kbd></form>
+ <a class="tbtn" href="#/cart" aria-label="Cart">${ic('cart')}${cc?`<span class="cnt">${cc}</span>`:''}</a>
+ ${u?`<a class="chipstore" href="#/menu" aria-label="Account">${av(u)}<span class="hide-m">${esc(myBrand()?.name||u.name)}</span></a>`:`<a class="signin" href="#/auth" data-a="tosign">Sign in</a>`}</header>
+ <div class="layout"><nav class="side" aria-label="Main">${side}</nav><main><div class="wrap">${content}</div></main></div><nav class="bottom" aria-label="Main">${bot}</nav>`;
+}
+
+/* ---------- views ---------- */
+function productCard(p){const b=brandOf(p.brandId);return`<div class="pc"><a class="im" href="#/product/${p.id}"><img src="${pimg(p)}" alt="${esc(p.name)}" loading="lazy"></a><div class="bd2"><span class="mut sm">${esc(b?.name||'')} ${pst(p)!=='active'?pBadge(p):''}</span><a class="nm" href="#/product/${p.id}">${esc(p.name)}</a><span class="pr">${money(p.price)}</span><span class="usd">${usd(p.price)}</span>${p.stock<=0?`<button class="btn" disabled>Sold out</button>`:`<button class="btn" data-a="add" data-id="${p.id}">Add to cart</button>`}</div></div>`}
+function brandRow(b,showIdx=true){const a=S.series[b.id],c=chg(b.id);return`<a class="item" href="#/brand/${b.id}">${b.logo?`<img class="thumb" src="${b.logo}" alt="" style="object-fit:contain;background:#fff">`:`<span class="avatar" style="width:44px;height:44px;border-radius:8px">${esc(initials(b.name))}</span>`}<div class="grow"><div class="b">${esc(b.name)}</div><div class="mut sm">${esc(b.category)} · ${S.products.filter(p=>p.brandId===b.id).length} products</div></div>${showIdx?`<div class="hide-m">${spark(a,c>=0?'#111111':'#c70a24')}</div><div class="right"><div class="b">${idx(b.id).toFixed(2)}</div><div class="sm">${pct(c)}</div></div>`:''}</a>`}
+
+function viewHome(){
+ const u=me(),mb=myBrand();
+ const stats=[['Brands live',live().length],['Products',liveProducts().length],['Orders placed',S.orders.length],['Sellers',S.users.filter(x=>S.brands.some(b=>b.ownerId===x.id)).length]];
+ const movers=[...live()].sort((a,b)=>chg(b.id)-chg(a.id)).slice(0,4);
+ let guide='';
+ if(u&&!isAdmin()){
+  const steps=[['Create your account',true,'You are signed in.'],['Create your store',!!mb,'Add your brand name, logo and description.','#/store'],['Pay the listing fee',!!mb&&['publishing','active'].includes(mb.status),`Pay ${money(S.settings.fee)} once.`,'#/store'],['Store is Active',mb?.status==='active','We publish your store after payment is confirmed.','#/store'],['Add your first product',!!mb&&S.products.some(p=>p.brandId===mb.id),'Upload a real photo, price and description.','#/products'],['Connect a store (optional)',S.connections.some(c=>c.userId===u.id),'Bring products from Shopify or Printify.','#/connect']];
+  const done=steps.filter(s=>s[1]).length;
+  if(done<steps.length)guide=`<div class="card"><div class="row"><div class="grow"><h2>Setup guide</h2><p class="mut">Open your brand and start selling on VTXOnline.</p></div><span class="mut sm">${done} / ${steps.length} done</span></div><div class="bar" style="margin:10px 0 4px"><i style="width:${done/steps.length*100}%"></i></div>${steps.map(s=>`<div class="step"><span class="dot ${s[1]?'done':''}">${s[1]?ic('check'):''}</span><div class="grow"><div class="b">${s[0]}</div><div class="mut sm">${s[2]}</div></div>${!s[1]&&s[3]?`<a class="btn sm" href="${s[3]}">Start</a>`:''}</div>`).join('')}</div>`;
+ }
+ const sellCta=!u?`<a class="btn g lg" href="#/auth" data-a="tosign">Create account</a>`:'';
+ return`<div class="hero"><img src="${LOGO}" alt="VTX Apparel logo"><div><h1>Shop independent brands. Sell your own.</h1><p>VTXOnline is a marketplace where brand owners list real products and shoppers order straight from them.</p><div class="row wrap2 gap8"><a class="btn g lg" href="#/market">Browse the market</a>${u?`<a class="btn lg" href="#/store">${mb?'My store':'Create store'}</a>`:sellCta}</div></div></div>
+ ${migBanner()}${guide}${mb&&mb.status==='active'?statsRow(mb):''}
+ <div class="card flush"><div class="grid g4" style="gap:0">${stats.map((s,i)=>`<div class="stat" style="${i?'border-left:1px solid var(--line)':''}"><div class="mut sm">${s[0]}</div><div class="n">${s[1]}</div></div>`).join('')}</div></div>
+ <div class="page-h"><h2 class="grow" style="font-size:16px">Trending products</h2><a href="#/market">View all</a></div>
+ <div class="pgrid" style="margin-bottom:20px">${liveProducts().slice(0,8).map(productCard).join('')||'<div class="card empty grow"><h2>No products yet</h2><p>Brands will appear here once they list items.</p></div>'}</div>
+ <div class="card flush"><div class="row" style="padding:14px 16px"><h2 class="grow">Brands moving today</h2><a href="#/chart">Open chart</a></div>${movers.map(b=>brandRow(b)).join('')}</div>`;
+}
+
+function filtered(){
+ let L=liveProducts();const q=UI.q.trim().toLowerCase();
+ if(q)L=L.filter(p=>(p.name+' '+p.description+' '+(brandOf(p.brandId)?.name||'')).toLowerCase().includes(q));
+ if(UI.cat!=='All')L=L.filter(p=>p.category===UI.cat);
+ if(UI.sort==='low')L=[...L].sort((a,b)=>a.price-b.price);else if(UI.sort==='high')L=[...L].sort((a,b)=>b.price-a.price);else L=[...L].sort((a,b)=>b.created-a.created);
+ return L;
+}
+function gridHtml(){
+ if(UI.mtab==='brands'){const q=UI.q.trim().toLowerCase();const L=live().filter(b=>!q||b.name.toLowerCase().includes(q));return L.length?`<div class="card flush">${L.map(b=>brandRow(b)).join('')}</div>`:`<div class="card empty"><h2>No brands found</h2><p>Try a different search.</p></div>`}
+ const L=filtered();return L.length?`<div class="pgrid">${L.map(productCard).join('')}</div>`:`<div class="card empty"><h2>No products found</h2><p>Try another category or search term.</p></div>`;
+}
+function viewMarket(){
+ return`<div class="page-h"><h1 class="grow">Market</h1><select class="in" style="width:auto" data-c="sort" aria-label="Sort"><option value="new" ${UI.sort==='new'?'selected':''}>Newest</option><option value="low" ${UI.sort==='low'?'selected':''}>Price: low to high</option><option value="high" ${UI.sort==='high'?'selected':''}>Price: high to low</option></select></div>
+ <div class="tabs"><button class="tab ${UI.mtab==='products'?'on':''}" data-a="mtab" data-v="products">Products</button><button class="tab ${UI.mtab==='brands'?'on':''}" data-a="mtab" data-v="brands">Brands</button></div>
+ ${UI.mtab==='products'?`<div class="chips">${['All',...CATS].map(c=>`<button class="chip ${UI.cat===c?'on':''}" data-a="cat" data-v="${c}">${c}</button>`).join('')}</div>`:''}
+ <div id="grid">${gridHtml()}</div>`;
+}
+function viewProduct(id){
+ const p=S.products.find(x=>x.id===id);if(!p||(pst(p)!=='active'&&!(me()&&(isAdmin()||brandOf(p.brandId)?.ownerId===me().id))))return`<div class="card empty"><h2>Product not found</h2><a class="btn" href="#/market">Back to Market</a></div>`;
+ const b=brandOf(p.brandId);const imgs=p.images?.length?p.images:[ph(p.name)];UI.pi=0;
+ return`<p style="margin-bottom:12px"><a href="#/market">← Market</a></p><div class="card"><div class="pp"><div><img class="main" id="pmain" src="${imgs[0]}" alt="${esc(p.name)}">${imgs.length>1?`<div class="thumbs">${imgs.map((s,i)=>`<img src="${s}" class="${i?'':'on'}" data-a="pimg" data-i="${i}" alt="Photo ${i+1}">`).join('')}</div>`:''}</div>
+ <div class="col"><div><a href="#/brand/${b.id}" class="b">${esc(b.name)}</a></div><h1>${esc(p.name)}</h1><div style="font-size:22px;font-weight:650">${money(p.price)}</div><div class="usd" style="margin-top:-8px">${usd(p.price)}</div><div>${p.stock>0?badge(p.stock+' in stock','ok'):badge('Sold out','cr')} ${badge(p.category)}</div>
+ <p style="white-space:pre-line">${esc(p.description)}</p>
+ ${p.stock>0?`<div class="row"><div class="qty"><button data-a="pq" data-v="-1" aria-label="Less">−</button><span id="pq">1</span><button data-a="pq" data-v="1" aria-label="More">+</button></div></div><div class="row wrap2 gap8"><button class="btn lg" data-a="add" data-id="${p.id}" data-q="1">Add to cart</button><button class="btn p lg" data-a="buynow" data-id="${p.id}">Buy now</button></div>`:''}
+ ${(me()&&(isAdmin()||b.ownerId===me().id))?`<button class="btn sm" data-a="editp" data-id="${p.id}" style="align-self:flex-start">${ic('edit')}Edit product</button>`:''}
+ </div></div></div>`;
+}
+function cartLines(){return S.cart.map(c=>({c,p:S.products.find(p=>p.id===c.pid)})).filter(x=>x.p&&(x.p.status||'active')==='active'&&brandOf(x.p.brandId)?.status==='active')}
+function viewCart(){
+ const L=cartLines();
+ if(!L.length)return`<div class="page-h"><h1>Cart</h1></div><div class="card empty"><h2>Your cart is empty</h2><p>Find something you like in the market.</p><p style="margin-top:12px"><a class="btn p" href="#/market">Browse the market</a></p></div>`;
+ const total=L.reduce((a,x)=>a+x.p.price*x.c.qty,0);
+ return`<div class="page-h"><h1>Cart</h1></div><div class="card flush">${L.map(({c,p})=>`<div class="item"><img class="thumb" src="${pimg(p)}" alt=""><div class="grow"><a class="b" href="#/product/${p.id}">${esc(p.name)}</a><div class="mut sm">${esc(brandOf(p.brandId).name)} · ${money(p.price)}</div></div><div class="qty"><button data-a="cq" data-id="${p.id}" data-v="-1" aria-label="Less">−</button><span>${c.qty}</span><button data-a="cq" data-id="${p.id}" data-v="1" aria-label="More">+</button></div><div class="b right" style="min-width:84px">${money(p.price*c.qty)}<span class="usd">${usd(p.price*c.qty)}</span></div><button class="tbtn" style="color:#616161" data-a="crm" data-id="${p.id}" aria-label="Remove">${ic('trash')}</button></div>`).join('')}</div>
+ <div class="card"><div class="row"><span class="grow b">Total</span><span class="b" style="font-size:18px">${money(total)}<span class="usd">${usd(total)}</span></span></div><button class="btn p lg full" style="margin-top:12px" data-a="tocheckout">Checkout</button></div>`;
+}
+const CRYPTO0={coin:'USDT',network:'BNB Smart Chain (BEP-20)',address:'0x2b0C255d7B39B255092B2517C97FA1F7A0cBDE1a'};
+function payBox(amount,label){const a=S.settings.account,c=S.settings.crypto||CRYPTO0;const usdt=amount!=null?(amount/usdRate()).toFixed(2):null;
+ return`<div class="pay"><div class="sm mut" style="margin-bottom:4px">${label} (Nigerian bank transfer)</div>
+ <div class="l"><span class="mut">Account name</span><span class="chip2 b">${esc(a.name)}<button class="btn sm" type="button" data-a="copy" data-v="${esc(a.name)}">${ic('copy')}</button></span></div>
+ <div class="l"><span class="mut">Bank</span><span class="b">${esc(a.bank)}</span></div>
+ <div class="l"><span class="mut">Account number</span><span class="chip2 b">${esc(a.number)}<button class="btn sm" type="button" data-a="copy" data-v="${esc(a.number)}">${ic('copy')}</button></span></div>
+ ${amount!=null?`<div class="l"><span class="mut">Amount</span><span class="chip2 b">${money(amount)}<button class="btn sm" type="button" data-a="copy" data-v="${amount}">${ic('copy')}</button></span></div>`:''}</div>
+ <div class="pay" style="margin-top:10px"><div class="sm mut" style="margin-bottom:4px">Outside Nigeria? Pay with ${esc(c.coin)} on ${esc(c.network)}</div>
+ <div class="b" style="word-break:break-all;font-size:12.5px;margin:4px 0">${esc(c.address)} <button class="btn sm" type="button" data-a="copy" data-v="${esc(c.address)}">${ic('copy')}</button></div>
+ ${usdt?`<div class="l"><span class="mut">Send about</span><span class="b">${usdt} ${esc(c.coin)}</span></div>`:''}
+ <p class="hint">Send only ${esc(c.coin)} on the ${esc(c.network)} network. Coins sent on another network are lost. Enter your transaction hash as the reference below.</p></div>`}
+function viewCheckout(){
+ const L=cartLines(),u=me();if(!L.length)return viewCart();
+ const T=calc(L),total=T.net,D=UI.draft||{};
+ return`<p style="margin-bottom:12px"><a href="#/cart">← Cart</a></p><div class="page-h"><h1>Checkout</h1></div>
+ <form data-f="checkout" class="grid" style="grid-template-columns:minmax(0,3fr) minmax(0,2fr);align-items:start" id="co"><div class="col">
+ <div class="card"><h2>Delivery details</h2><p class="mut sm" style="margin-bottom:12px">The brand owner uses these details to deliver your order.</p>
+ <label class="f"><span>Full name</span><input class="in" name="name" required value="${esc(D.name??u.name)}" autocomplete="name"></label>
+ <label class="f"><span>Phone number</span><input class="in" name="phone" type="tel" required value="${esc(D.phone??(u.phone||''))}" autocomplete="tel" placeholder="e.g. 0801 234 5678"></label>
+ <label class="f"><span>Delivery address</span><textarea class="in" name="address" required style="min-height:70px" autocomplete="street-address" placeholder="House number, street, area">${esc(D.address||'')}</textarea></label>
+ <div class="grid g2 keep"><label class="f"><span>City</span><input class="in" name="city" required value="${esc(D.city||'')}"></label><label class="f"><span>State</span><input class="in" name="state" required value="${esc(D.state||'')}"></label></div>
+ <label class="f"><span>Nearest landmark or location note</span><input class="in" name="landmark" placeholder="Optional" value="${esc(D.landmark||'')}"></label>
+ <input type="hidden" name="lat" value="${esc(D.lat||'')}"><input type="hidden" name="lng" value="${esc(D.lng||'')}">
+ <button class="btn" type="button" data-a="geo">${ic('pin')}Share my current location</button><div class="hint" id="geost">Optional. Helps the rider find you faster.</div></div></div>
+ <div class="col"><div class="card"><h2>Order summary</h2>${L.map(({c,p})=>`<div class="row" style="padding:6px 0"><span class="grow">${esc(p.name)} <span class="mut">× ${c.qty}</span></span><span>${money(p.price*c.qty)}</span></div>`).join('')}<div class="row gap8" style="margin-top:8px"><input class="in" id="codein" placeholder="Discount code" value="${esc(UI.code?UI.code.code:'')}" aria-label="Discount code"><button class="btn" type="button" data-a="applycode">Apply</button></div>${T.disc?`<div class="row" style="padding-top:8px"><span class="grow">Discount (${esc(UI.code.code)})</span><span>−${money(T.disc)}</span></div>`:''}<hr class="hr"><div class="row"><span class="grow b">Total to pay</span><span class="b right" style="font-size:18px">${money(total)}<span class="usd">${usd(total)}</span></span></div></div>
+ <div class="card"><h2>Pay by bank transfer</h2><p class="mut sm" style="margin-bottom:10px">Send the exact total to this account, then enter your transfer reference below.</p>${payBox(total,'Send payment to')}
+ <label class="f" style="margin-top:12px"><span>Transfer reference, sender name or crypto transaction hash</span><input class="in" name="ref" value="${esc(D.ref||'')}" required placeholder="Shown on your bank receipt"></label>
+ <button class="btn p lg full" type="submit">Place order</button><p class="hint">Your order is confirmed once the payment is verified.</p></div></div></form>
+ <style>@media(max-width:800px){#co{grid-template-columns:1fr!important}}</style>`;
+}
+
+const STAT={verifying:['Awaiting payment check','wa'],paid:['Paid','in'],shipped:['Shipped','in'],delivered:['Delivered','ok'],cancelled:['Cancelled','cr']};
+function viewOrders(){
+ const u=me(),mb=myBrand();
+ const tabs=[['mine','My purchases']];if(mb)tabs.push(['brand','Brand orders']);if(isAdmin())tabs.push(['all','All orders']);
+ if(!UI.otab||!tabs.some(t=>t[0]===UI.otab))UI.otab=isAdmin()?'all':'mine';
+ let L=[];
+ if(UI.otab==='mine')L=S.orders.filter(o=>o.buyerId===u.id);else if(UI.otab==='brand')L=S.orders.filter(o=>o.brandId===mb.id);else L=S.orders;
+ L=[...L].sort((a,b)=>b.created-a.created);
+ return`<div class="page-h"><h1>Orders</h1></div><div class="tabs">${tabs.map(t=>`<button class="tab ${UI.otab===t[0]?'on':''}" data-a="otab" data-v="${t[0]}">${t[1]}</button>`).join('')}</div>
+ ${L.length?L.map(orderCard).join(''):`<div class="card empty"><h2>No orders yet</h2><p>${UI.otab==='mine'?'When you order something it will show up here.':'Orders will appear here as customers buy.'}</p>${UI.otab==='mine'?'<p style="margin-top:12px"><a class="btn p" href="#/market">Browse the market</a></p>':''}</div>`}`;
+}
+function orderCard(o){
+ const u=me(),b=brandOf(o.brandId),st=STAT[o.status],admin=isAdmin(),seller=b&&b.ownerId===u.id,buyer=o.buyerId===u.id;
+ const showShip=admin||buyer||(seller&&['paid','shipped','delivered'].includes(o.status));
+ const sh=o.ship;const maps=sh.lat?`https://www.google.com/maps?q=${sh.lat},${sh.lng}`:'';
+ let act='';
+ if(admin&&o.status==='verifying')act+=`<button class="btn g sm" data-a="ord" data-v="confirm" data-id="${o.id}">Confirm payment</button>`;
+ if((admin||seller)&&o.status==='paid')act+=`<button class="btn p sm" data-a="ord" data-v="ship" data-id="${o.id}">Mark as shipped</button>`;
+ if((buyer||admin)&&o.status==='shipped')act+=`<button class="btn g sm" data-a="ord" data-v="deliver" data-id="${o.id}">${buyer?'I received it':'Mark delivered'}</button>`;
+ if(admin&&['verifying','paid'].includes(o.status))act+=`<button class="btn d sm" data-a="ord" data-v="cancel" data-id="${o.id}">Cancel order</button>`;
+ return`<div class="card"><div class="row wrap2"><div class="grow"><div class="b">${o.id}</div><div class="mut sm">${fdate(o.created)} · ${esc(b?.name||'Brand')}</div></div>${o.payoutDone?badge('Seller paid','ok'):o.status==='delivered'?badge('Credited to seller balance','ok'):''} ${badge(st[0],st[1])}</div>
+ <hr class="hr">${o.items.map(i=>`<div class="row" style="padding:3px 0"><span class="grow">${esc(i.name)} <span class="mut">× ${i.qty}</span></span><span>${money(i.price*i.qty)}</span></div>`).join('')}
+ ${o.discount?`<div class="row sm mut" style="padding-top:4px"><span class="grow">Discount (${esc(o.code)})</span><span>−${money(o.discount)}</span></div>`:''}<div class="row" style="padding-top:6px"><span class="grow b">Total</span><span class="b right">${money(o.subtotal)}<span class="usd">${usd(o.subtotal)}</span></span></div>
+ ${(admin||seller)?`<div class="row sm mut" style="padding-top:4px"><span class="grow">VTXOnline commission (${Math.round(o.rate*100)}%)</span><span>${money(o.commission)}</span></div><div class="row sm" style="padding-top:2px"><span class="grow">Brand payout</span><span class="b">${money(o.payout)}</span></div>`:''}
+ ${showShip?`<hr class="hr"><div class="sm"><div class="b">Deliver to ${esc(sh.name)}</div><div>${esc(sh.address)}, ${esc(sh.city)}, ${esc(sh.state)}</div>${sh.landmark?`<div class="mut">Landmark: ${esc(sh.landmark)}</div>`:''}<div>Phone: <a href="tel:${esc(sh.phone)}">${esc(sh.phone)}</a>${maps?` · <a href="${maps}" target="_blank" rel="noopener">View on map</a>`:''}</div></div>`:(seller?`<p class="hint">Delivery details appear once payment is confirmed.</p>`:'')}
+ ${admin?`<div class="sm mut" style="margin-top:6px">Payment reference: ${esc(o.ref)}</div>`:''}
+ ${act?`<div class="row wrap2 gap8" style="margin-top:12px">${act}</div>`:''}</div>`;
+}
+function viewChart(){
+ const L=live();
+ const rows=[...L].sort((a,b)=>chg(b.id)-chg(a.id));
+ return`<div class="page-h"><h1 class="grow">Analytics</h1><span class="live"><i></i>Live</span></div>${myBrand()&&myBrand().status==='active'?statsRow(myBrand()):''}
+ <div class="card"><div class="legend" id="legend"></div><div class="chartwrap"><canvas id="chart" role="img" aria-label="Line chart of brand index values"></canvas><div id="tip" class="tip"></div></div><p class="hint">Index starts near 100 and moves with every update. Confirmed sales push a brand up.</p></div>
+ <div class="card flush" id="ctable"></div>`;
+}
+function colorOf(id){const i=live().findIndex(b=>b.id===id);return PAL[(i<0?0:i)%PAL.length]}
+function paintChart(){
+ const c=$('#chart');if(!c)return;
+ const L=live(),on=L.filter(b=>!UI.hidden.includes(b.id));
+ $('#legend').innerHTML=L.map(b=>`<button class="lg ${UI.hidden.includes(b.id)?'off':''}" data-a="tog" data-id="${b.id}"><i style="background:${colorOf(b.id)}"></i>${esc(b.name)}</button>`).join('');
+ const rows=[...L].sort((a,b)=>chg(b.id)-chg(a.id));
+ $('#ctable').innerHTML=rows.map(b=>`<a class="item" href="#/brand/${b.id}"><i style="width:10px;height:10px;border-radius:50%;background:${colorOf(b.id)};flex:none"></i><div class="grow b">${esc(b.name)}</div><div class="hide-m">${spark(S.series[b.id],colorOf(b.id))}</div><div class="right" style="min-width:90px"><div class="b">${idx(b.id).toFixed(2)}</div><div class="sm">${pct(chg(b.id))}</div></div></a>`).join('')||'<div class="empty">No live brands yet.</div>';
+ const dpr=devicePixelRatio||1,W=c.clientWidth,H=c.clientHeight;c.width=W*dpr;c.height=H*dpr;const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,H);
+ const padL=44,padR=10,padT=10,padB=22;let all=[];on.forEach(b=>all.push(...(S.series[b.id]||[])));
+ if(!all.length){x.fillStyle='#616161';x.font='13px sans-serif';x.fillText('Select a brand to see its line.',padL,H/2);return}
+ let mn=Math.min(...all),mx=Math.max(...all);const m=(mx-mn)*.1||5;mn-=m;mx+=m;
+ const X=i=>padL+i/(N-1)*(W-padL-padR),Y=v=>padT+(1-(v-mn)/(mx-mn))*(H-padT-padB);
+ x.font='11px sans-serif';x.fillStyle='#616161';x.strokeStyle='#ececec';x.lineWidth=1;
+ for(let g=0;g<=4;g++){const v=mn+(mx-mn)*g/4,y=Y(v);x.beginPath();x.moveTo(padL,y);x.lineTo(W-padR,y);x.stroke();x.fillText(v.toFixed(0),6,y+4)}
+ x.fillText('Earlier',padL,H-6);x.textAlign='right';x.fillText('Now',W-padR,H-6);x.textAlign='left';
+ on.forEach(b=>{const a=S.series[b.id];if(!a)return;const col=colorOf(b.id);
+  if(on.length===1){const g=x.createLinearGradient(0,padT,0,H-padB);g.addColorStop(0,col+'33');g.addColorStop(1,col+'00');x.beginPath();a.forEach((v,i)=>i?x.lineTo(X(i+N-a.length),Y(v)):x.moveTo(X(i+N-a.length),Y(v)));x.lineTo(X(N-1),H-padB);x.lineTo(X(N-a.length),H-padB);x.closePath();x.fillStyle=g;x.fill()}
+  x.beginPath();x.strokeStyle=col;x.lineWidth=2;x.lineJoin='round';a.forEach((v,i)=>i?x.lineTo(X(i+N-a.length),Y(v)):x.moveTo(X(i+N-a.length),Y(v)));x.stroke();
+  x.beginPath();x.fillStyle=col;x.arc(X(N-1),Y(a[a.length-1]),3.5,0,7);x.fill()});
+ c.onpointermove=e=>{const r=c.getBoundingClientRect(),px=e.clientX-r.left;let i=Math.round((px-padL)/(W-padL-padR)*(N-1));i=Math.max(0,Math.min(N-1,i));
+  const tip=$('#tip');tip.innerHTML=on.map(b=>{const a=S.series[b.id],v=a[i-(N-a.length)];return v==null?'':`<div><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${colorOf(b.id)};margin-right:6px"></i>${esc(b.name)}: <b>${v.toFixed(2)}</b></div>`}).join('');
+  tip.style.display='block';tip.style.left=Math.min(Math.max(0,X(i)+12),W-150)+'px';tip.style.top='10px'};
+ c.onpointerleave=()=>{$('#tip').style.display='none'};
+}
+function viewMenu(){
+ const u=me();const L=[['store','plus','Create store','Set up your brand, pay and publish'],['wallet','wallet','Balance','Earnings and withdrawals'],['products','bag','Products','Your products and their status'],['orders','box','Orders','Track purchases and brand orders'],['customers','users','Customers','People who bought from you'],['discounts','tag','Discounts','Create promo codes'],['marketing','mega','Marketing','Share your store link'],['cart','cart','Cart','Review what you plan to buy'],['chart','trend','Analytics','Live brand chart'],['connect','link','Connect store','Shopify, Printify and more']];
+ if(isAdmin())L.unshift(['admin','shield','Admin','Payments, brands and revenue']);
+ return`<div class="page-h"><h1>Menu</h1></div>
+ <div class="card"><div class="row">${u?`<span class="avatar" style="width:52px;height:52px;font-size:16px">${u.role==='admin'?`<img src="${LOGO}" alt="">`:esc(initials(u.name))}</span><div class="grow"><div class="b" style="font-size:16px">${esc(u.name)}</div><div class="mut">${esc(u.email)}</div>${u.role==='admin'?badge('Admin','ok'):''}</div>`:`<img src="${LOGO}" alt="" style="width:52px;height:52px;border-radius:12px"><div class="grow"><div class="b">Welcome to VTXOnline</div><div class="mut">Sign in to order or sell.</div></div><a class="btn p" href="#/auth" data-a="tosign">Sign in</a>`}</div></div>
+ <div class="card flush">${L.map(([h,i,t,s])=>`<a class="item" href="#/${h}">${ic(i)}<div class="grow"><div class="b">${t}</div><div class="mut sm">${s}</div></div></a>`).join('')}<a class="item" href="#/settings">${ic('set')}<div class="grow"><div class="b">Settings</div><div class="mut sm">Profile and password</div></div></a></div>
+ ${u?`<button class="btn lg full" data-a="logout">${ic('out')}Sign out</button>`:''}`;
+}
+function viewSettings(){
+ const u=me();
+ if(!u)return`<div class="page-h"><h1>Settings</h1></div><div class="card empty"><h2>Sign in to manage settings</h2><p style="margin-top:12px"><a class="btn p" href="#/auth" data-a="tosign">Sign in</a></p></div>`;
+ const s=S.settings;
+ return`<div class="page-h"><h1>Settings</h1></div>
+ <div class="card"><h2>Profile</h2><form data-f="profile" style="margin-top:10px"><label class="f"><span>Name</span><input class="in" name="name" required value="${esc(u.name)}"></label><label class="f"><span>Phone</span><input class="in" name="phone" type="tel" value="${esc(u.phone||'')}"></label>${isAdmin()?`<label class="f"><span>Email (your admin login)</span><input class="in" name="email" type="email" required value="${esc(u.email)}"></label>`:`<label class="f"><span>Email</span><input class="in" value="${esc(u.email)}" disabled></label>`}<button class="btn p" type="submit">Save profile</button></form></div>
+ <div class="card"><h2>Change password</h2><form data-f="pass" style="margin-top:10px"><label class="f"><span>Current password</span><input class="in" name="old" type="password" required autocomplete="current-password"></label><label class="f"><span>New password</span><input class="in" name="new" type="password" required minlength="6" autocomplete="new-password"></label><button class="btn p" type="submit">Update password</button></form></div>
+ ${isAdmin()?`<div class="card"><h2>Payment account</h2><p class="mut sm">Shown to brand owners (listing fee) and shoppers (orders).</p><form data-f="acct" style="margin-top:10px"><label class="f"><span>Account name</span><input class="in" name="name" required value="${esc(s.account.name)}"></label><div class="grid g2 keep"><label class="f"><span>Bank</span><input class="in" name="bank" required value="${esc(s.account.bank)}"></label><label class="f"><span>Account number</span><input class="in" name="number" required value="${esc(s.account.number)}"></label></div><div class="grid g2 keep"><label class="f"><span>Brand listing fee (₦)</span><input class="in" name="fee" type="number" min="0" required value="${s.fee}"></label><label class="f"><span>Commission on orders (%)</span><input class="in" name="comm" type="number" min="0" max="100" step="0.1" required value="${(rate()*100).toFixed(1).replace(/\.0$/,'')}"></label></div><label class="f"><span>USDT wallet address (BNB Smart Chain, BEP-20)</span><input class="in" name="cryptoaddr" value="${esc((S.settings.crypto||CRYPTO0).address)}" pattern="0x[a-fA-F0-9]{40}" required></label><label class="f"><span>Minimum withdrawal (₦)</span><input class="in" name="minw" type="number" min="0" value="${S.settings.minWithdraw??1000}"></label><label class="f"><span>Dollar rate (₦ per $1)</span><input class="in" name="usd" type="number" min="0" step="any" value="${S.settings.usdRate||0}"><div class="hint">Leave 0 to use the live rate (now ${money(usdRate())} = $1).</div></label><button class="btn p" type="submit">Save platform settings</button></form></div>
+ <div class="card"><h2>Data</h2><p class="mut sm" style="margin-bottom:10px">Everything is saved on the shared server, so all users see the same brands, products and orders.</p><div class="row wrap2 gap8"><button class="btn" data-a="export">Download backup</button>${hasLocal()?`<button class="btn p" data-a="migrate">Move my old phone data to the server</button>`:''}</div></div>`:''}
+ <button class="btn lg full" data-a="logout">${ic('out')}Sign out</button>`;
+}
+function viewConnect(){
+ const u=me(),mine=S.connections.filter(c=>c.userId===u.id);
+ const P=[['Shopify','Import your products straight from your Shopify store.',1],['Printify','Print-on-demand products. Sync request is logged for setup.',0],['WooCommerce','WordPress store. Sync request is logged for setup.',0],['Etsy','Handmade and vintage shop. Sync request is logged for setup.',0],['Wix','Wix Stores. Sync request is logged for setup.',0],['Other store','Any store with a website link.',0]];
+ return`<div class="page-h"><h1>Connect store</h1></div>
+ <div class="grid g2" style="margin-bottom:16px">${P.map(([n,d,real])=>`<div class="card" style="margin:0"><div class="row"><span class="avatar" style="width:40px;height:40px;border-radius:10px">${n[0]}</span><div class="grow"><h2 style="margin:0">${n}</h2>${real?badge('Live import','ok'):badge('Request')}</div></div><p class="mut" style="margin:10px 0">${d}</p><button class="btn p" data-a="conn" data-v="${n}">Connect ${n}</button></div>`).join('')}</div>
+ <div class="card flush"><div class="row" style="padding:14px 16px"><h2>Your connections</h2></div>${mine.length?mine.map(c=>`<div class="item"><div class="grow"><div class="b">${esc(c.platform)}</div><div class="mut sm">${esc(c.url)} · ${fdate(c.created)}</div></div>${badge(c.status==='imported'?`${c.count} imported`:'Requested',c.status==='imported'?'ok':'wa')}<button class="tbtn" style="color:#616161" data-a="cdel" data-id="${c.id}" aria-label="Remove">${ic('trash')}</button></div>`).join(''):'<div class="empty">No stores connected yet.</div>'}</div>`;
+}
+function viewSell(){
+ const u=me(),b=myBrand();
+ if(!b)return`<div class="page-h"><h1>Open your brand</h1></div><div class="card"><form data-f="brand"><label class="f"><span>Brand name</span><input class="in" name="name" required maxlength="40"></label><label class="f"><span>Category</span><select class="in" name="category">${CATS.map(c=>`<option>${c}</option>`).join('')}</select></label><label class="f"><span>Description</span><textarea class="in" name="description" required placeholder="What does your brand make and who is it for?"></textarea></label><label class="f"><span>Brand logo</span><input class="in" type="file" id="logof" accept="image/*"><div id="logoprev"></div></label>
+ <button class="btn p lg" type="submit">${isAdmin()?'Create brand':'Continue'}</button>${isAdmin()?'':`<p class="hint">Next step: pay the one-time listing fee of ${money(S.settings.fee)}.</p>`}</form></div>`;
+ if(b.status==='active')return sellDash(b);
+ const pay=S.payments.filter(p=>p.brandId===b.id).pop();
+ if(b.status==='pending')return`<div class="page-h"><h1>${esc(b.name)}</h1></div><div class="ban wa">${ic('shield')}<div><b>Payment under review.</b> We are checking your transfer of ${money(pay?.amount||S.settings.fee)} (ref: ${esc(pay?.ref||'')}). Your brand goes live as soon as it is approved.</div></div>`;
+ return`<div class="page-h"><h1>Pay the listing fee</h1></div>${b.status==='rejected'?`<div class="ban cr"><div>Your last payment could not be verified. Check the details and submit again.</div></div>`:b.status==='suspended'?`<div class="ban cr"><div>This brand is suspended. Contact the admin.</div></div>`:''}
+ ${b.status==='suspended'?'':`<div class="card"><h2>${esc(b.name)}</h2><p class="mut" style="margin:4px 0 12px">Pay a one-time fee of <b>${money(S.settings.fee)}</b> to list products on VTXOnline.</p>${payBox(S.settings.fee,'Transfer to')}
+ <form data-f="paylist" style="margin-top:14px"><label class="f"><span>Transfer reference, sender name or crypto transaction hash</span><input class="in" name="ref" required></label><label class="f"><span>Payment screenshot (optional)</span><input class="in" type="file" id="prooff" accept="image/*"><div id="proofprev"></div></label><button class="btn g lg" type="submit">I have paid</button></form></div>`}`;
+}
+function sellDash(b){
+ const L=S.products.filter(p=>p.brandId===b.id),O=S.orders.filter(o=>o.brandId===b.id&&counted(o));
+ const sales=O.reduce((a,o)=>a+o.subtotal,0),earn=O.reduce((a,o)=>a+o.payout,0);
+ return`<div class="page-h">${b.logo?`<img src="${b.logo}" alt="" style="width:44px;height:44px;border-radius:10px;object-fit:contain;background:#fff;border:1px solid var(--line)">`:''}<h1 class="grow">${esc(b.name)}</h1><a class="btn" href="#/brand/${b.id}">View public page</a><button class="btn p" data-a="newp">${ic('plus')}Add product</button></div>
+ <div class="card flush"><div class="grid g4" style="gap:0">${[['Products',L.length],['Paid orders',O.length],['Sales',money(sales)],['Your earnings',money(earn)]].map((s,i)=>`<div class="stat" style="${i?'border-left:1px solid var(--line)':''}"><div class="mut sm">${s[0]}</div><div class="n" style="font-size:18px">${s[1]}</div></div>`).join('')}</div></div>
+ ${b.ownerId==='u_admin'?'':`<p class="hint" style="margin:-6px 0 14px">Earnings are your sales minus the ${Math.round(rate()*100)}% VTXOnline commission.</p>`}
+ <div class="card flush">${L.length?L.map(p=>`<div class="item"><img class="thumb" src="${pimg(p)}" alt=""><div class="grow"><a class="b" href="#/product/${p.id}">${esc(p.name)}</a><div class="mut sm">${pBadge(p)} ${esc(p.category)} · ${p.stock} in stock${p.note?` · <span class="dn">${esc(p.note)}</span>`:''}</div></div><span class="b">${money(p.price)}</span><button class="btn sm" data-a="editp" data-id="${p.id}">${ic('edit')}</button><button class="btn sm d" data-a="delp" data-id="${p.id}" aria-label="Delete">${ic('trash')}</button></div>`).join(''):`<div class="empty"><h2>Add your first product</h2><p>Upload a real photo, a price and a description.</p><p style="margin-top:12px"><button class="btn p" data-a="newp">Add product</button></p></div>`}</div>`;
+}
+function viewAdmin(){
+ const T=[['overview','Overview'],['payments','Payments'],['brands','Brands'],['withdrawals','Withdrawals'],['users','Users'],['stores','Store requests']];
+ const pp=S.payments.filter(p=>p.status==='pending').length;
+ let body='';
+ const O=S.orders.filter(counted);
+ if(UI.atab==='overview'){
+  const comm=O.reduce((a,o)=>a+o.commission,0),owed=O.filter(o=>!o.payoutDone).reduce((a,o)=>a+o.payout,0),fees=S.payments.filter(p=>p.status==='approved').reduce((a,p)=>a+p.amount,0);
+  body=`<div class="ban"><div><b>Data lives in this browser.</b> Brands and orders created by other visitors are saved on their own devices. Connect a database to share data between everyone.</div></div>
+  <div class="card flush"><div class="grid g4" style="gap:0">${[['Your commission',money(comm)],['Owed to brands',money(owed)],['Listing fees',money(fees)],['Orders to verify',S.orders.filter(o=>o.status==='verifying').length]].map((s,i)=>`<div class="stat" style="${i?'border-left:1px solid var(--line)':''}"><div class="mut sm">${s[0]}</div><div class="n" style="font-size:18px">${s[1]}</div></div>`).join('')}</div></div>
+  <div class="card"><h2>Admin login</h2><p class="mut">Signed in as ${esc(me().email)}. Admin never pays listing fees.</p><p style="margin-top:10px"><a class="btn" href="#/orders">Review orders</a></p></div>`;
+ }else if(UI.atab==='payments'){
+  const L=[...S.payments].reverse();
+  body=L.length?L.map(p=>{const b=brandOf(p.brandId),u=S.users.find(x=>x.id===p.userId);return`<div class="card"><div class="row wrap2"><div class="grow"><div class="b">${esc(b?.name||'Deleted brand')}</div><div class="mut sm">${esc(u?.name||'')} · ${esc(u?.email||'')} · ${fdate(p.created)}</div></div>${badge(p.status,p.status==='approved'?'ok':p.status==='rejected'?'cr':'wa')}</div><div style="margin-top:8px">Amount: <b>${money(p.amount)}</b> · Ref: <b>${esc(p.ref)}</b></div>${p.proof?`<img class="proof" src="${p.proof}" alt="Payment proof">`:''}${p.status==='pending'?`<div class="row gap8" style="margin-top:12px"><button class="btn g sm" data-a="pay" data-v="approve" data-id="${p.id}">Approve and publish</button><button class="btn d sm" data-a="pay" data-v="reject" data-id="${p.id}">Reject</button></div>`:''}</div>`}).join(''):`<div class="card empty"><h2>No payments yet</h2><p>Listing fee payments from brand owners appear here.</p></div>`;
+ }else if(UI.atab==='brands'){
+  body=`<div class="card flush">${S.brands.map(b=>`<div class="item">${b.logo?`<img class="thumb" src="${b.logo}" alt="" style="object-fit:contain;background:#fff">`:`<span class="avatar" style="width:44px;height:44px;border-radius:8px">${esc(initials(b.name))}</span>`}<div class="grow"><div class="b">${esc(b.name)}</div><div class="mut sm">${b.status} · ${S.products.filter(p=>p.brandId===b.id).length} products</div></div>${b.id==='b_vtx'?'':b.status==='active'?`<button class="btn sm" data-a="bst" data-v="suspended" data-id="${b.id}">Suspend</button>`:`<button class="btn sm" data-a="bst" data-v="active" data-id="${b.id}">Activate</button>`}${b.id==='b_vtx'?'':`<button class="btn sm d" data-a="bdel" data-id="${b.id}" aria-label="Delete">${ic('trash')}</button>`}</div>`).join('')}</div>`;
+ }else if(UI.atab==='users'){
+  body=`<div class="card flush">${S.users.map(u=>`<div class="item">${av(u)}<div class="grow"><div class="b">${esc(u.name)}</div><div class="mut sm">${esc(u.email)} ${u.phone?'· '+esc(u.phone):''}</div></div>${u.role==='admin'?badge('Admin','ok'):''}</div>`).join('')}</div>`;
+ }else if(UI.atab==='withdrawals'){
+  body=withdrawalsHtml();
+ }else{
+  body=`<div class="card flush">${S.connections.length?S.connections.map(c=>{const u=S.users.find(x=>x.id===c.userId);return`<div class="item"><div class="grow"><div class="b">${esc(c.platform)}</div><div class="mut sm">${esc(c.url)} · ${esc(u?.name||'')}</div></div>${badge(c.status,c.status==='imported'?'ok':'wa')}</div>`}).join(''):'<div class="empty">No connection requests yet.</div>'}</div>`;
+ }
+ return`<div class="page-h"><h1>Admin</h1></div><div class="tabs">${T.map(t=>`<button class="tab ${UI.atab===t[0]?'on':''}" data-a="atab" data-v="${t[0]}">${t[1]}${t[0]==='payments'&&pp?` (${pp})`:''}${t[0]==='withdrawals'&&S.wd?` (${S.wd})`:''}</button>`).join('')}</div>${body}`;
+}
+function viewAuth(){
+ const m=UI.amode||'in';
+ return`<div class="authw"><div class="authc"><div class="lg0"><img src="${LOGO}" alt="VTX Apparel"><h1 style="margin-top:10px">VTXOnline Shopping</h1></div>
+ <div class="card"><div class="tabs"><button class="tab ${m==='in'?'on':''}" data-a="amode" data-v="in">Sign in</button><button class="tab ${m==='up'?'on':''}" data-a="amode" data-v="up">Create account</button></div>
+ ${m==='in'?`<form data-f="signin"><label class="f"><span>Email</span><input class="in" name="email" type="email" required autocomplete="email"></label><label class="f"><span>Password</span><input class="in" name="password" type="password" required autocomplete="current-password"></label><button class="btn p lg full" type="submit">Sign in</button></form>`
+ :`<form data-f="signup"><label class="f"><span>Full name</span><input class="in" name="name" required autocomplete="name"></label><label class="f"><span>Email</span><input class="in" name="email" type="email" required autocomplete="email"></label><label class="f"><span>Phone number</span><input class="in" name="phone" type="tel" required autocomplete="tel"></label><label class="f"><span>Password</span><input class="in" name="password" type="password" minlength="6" required autocomplete="new-password"><div class="hint">At least 6 characters.</div></label><button class="btn p lg full" type="submit">Create account</button></form>`}</div>
+ <p class="right"><a href="#/home">Continue browsing</a></p></div></div>`;
+}
+
+/* ---------- publishing pipeline ---------- */
+const pst=p=>p.status||'active';
+function checkProduct(p){if(!p.images||!p.images.length)return'Add at least one real photo.';if(!(p.price>0))return'Set a price above 0.';if((p.description||'').trim().length<10)return'Write a longer description (10+ characters).';return''}
+function bBadge(b){const m={unpaid:['Unpaid','wa'],pending:['Payment review','wa'],publishing:['Publishing','wa'],active:['Active · live','ok'],rejected:['Payment rejected','cr'],suspended:['Suspended','cr'],draft:['Draft','']}[b.status]||[b.status,''];return`<span class="bd ${m[1]}">${b.status==='publishing'?'<i class="spin"></i>':''}${m[0]}</span>`}
+function pBadge(p){const s=pst(p);const m={publishing:['Publishing','wa'],active:['Active','ok'],draft:['Draft','']}[s]||[s,''];return`<span class="bd ${m[1]}">${s==='publishing'?'<i class="spin"></i>':''}${m[0]}</span>`}
+function stepper(b){
+ const admin=b.ownerId==='u_admin',ord=['unpaid','pending','publishing','active'];let at=b.status==='rejected'?0:ord.indexOf(b.status);if(b.status==='draft')at=2;
+ const S4=[['Store created','Your brand details are saved.',true],['Listing fee',admin?'Not required for the admin.':'Pay by Opay transfer and send your reference.',at>=2||admin],['Publishing','We run checks on your store and products.',at>=3],['Active · live','Shoppers can see and buy from your store.',at>=3]];
+ const cur=admin?(at>=3?4:2):(at>=3?4:at>=2?2:1)+(at>=2&&at<3?0:0);
+ let curIdx=at>=3?4:(at===2?2:1);
+ return`<div class="card"><h2>Store status</h2>${S4.map((s,i)=>`<div class="step"><span class="dot ${s[2]?'done':''}">${s[2]?ic('check'):''}</span><div class="grow"><div class="b">${s[0]} ${i===curIdx&&!s[2]?badge('In progress','wa'):''}</div><div class="mut sm">${s[1]}</div></div></div>`).join('')}</div>`}
+function needStore(t){return`<div class="page-h"><h1>${t}</h1></div><div class="card empty"><h2>Create your store first</h2><p>This page unlocks once your store is created.</p><p style="margin-top:12px"><a class="btn p" href="#/store">Create store</a></p></div>`}
+function statsRow(b){const O=S.orders.filter(o=>o.brandId===b.id&&counted(o)),L=S.products.filter(p=>p.brandId===b.id),sales=O.reduce((a,o)=>a+o.subtotal,0),earn=O.reduce((a,o)=>a+o.payout,0);
+ return`<div class="card flush"><div class="grid g4" style="gap:0">${[['Products',L.length],['Paid orders',O.length],['Sales',money(sales)],['Your earnings',money(earn)]].map((s,i)=>`<div class="stat" style="${i?'border-left:1px solid var(--line)':''}"><div class="mut sm">${s[0]}</div><div class="n" style="font-size:18px">${s[1]}</div></div>`).join('')}</div></div>`}
+function viewStore(){
+ const b=myBrand();if(!b)return viewSell();
+ if(['unpaid','rejected','suspended','pending'].includes(b.status))return stepper(b)+viewSell();
+ const L=S.products.filter(p=>p.brandId===b.id);const url=location.origin+location.pathname+'#/brand/'+b.id;
+ return`<div class="page-h"><h1 class="grow">Create store</h1>${bBadge(b)}<a class="btn" href="#/brand/${b.id}">View storefront</a></div>
+ ${stepper(b)}
+ ${b.status==='publishing'?`<div class="ban wa"><i class="spin"></i><div><b>Publishing your store.</b> We are checking your details. This takes a few seconds and the page updates by itself.</div></div>`:''}
+ ${b.status==='draft'?`<div class="ban cr"><div><b>Your store is a draft.</b> Add a brand name and description below, then save to publish again.</div></div>`:''}
+ <div class="card"><h2>Store details</h2><form data-f="storeset" style="margin-top:10px">
+ <label class="f"><span>Store name</span><input class="in" name="name" required maxlength="40" value="${esc(b.name)}"></label>
+ <label class="f"><span>Tagline</span><input class="in" name="tagline" maxlength="80" value="${esc(b.tagline||'')}" placeholder="One line that describes your brand"></label>
+ <label class="f"><span>Description</span><textarea class="in" name="description" required>${esc(b.description)}</textarea></label>
+ <label class="f"><span>Announcement bar</span><input class="in" name="announce" maxlength="100" value="${esc(b.announce||'')}" placeholder="e.g. Free delivery in Lagos this week"></label>
+ <label class="f"><span>WhatsApp or phone for customers</span><input class="in" name="whatsapp" type="tel" value="${esc(b.whatsapp||'')}" placeholder="e.g. 2348012345678"></label>
+ <div class="grid g2"><label class="f"><span>Logo</span><input class="in" type="file" id="logof" accept="image/*"><div id="logoprev">${b.logo?`<img class="thumb" style="width:64px;height:64px;margin-top:8px;object-fit:contain" src="${b.logo}" alt="">`:''}</div></label>
+ <label class="f"><span>Banner photo</span><input class="in" type="file" id="bannerf" accept="image/*"><div id="bannerprev">${b.banner?`<img class="thumb" style="width:120px;height:48px;margin-top:8px" src="${b.banner}" alt="">`:''}</div></label></div>
+ <button class="btn p" type="submit">Save store</button></form></div>
+ <div class="card flush"><div class="row" style="padding:14px 16px"><div class="grow"><h2>Your products</h2><p class="mut sm">Everything you upload shows here. New items are Publishing first, then Active.</p></div><button class="btn p sm" data-a="newp">${ic('plus')}Add product</button></div>
+ ${L.length?L.map(p=>`<div class="item"><img class="thumb" src="${pimg(p)}" alt=""><div class="grow"><a class="b" href="#/product/${p.id}">${esc(p.name)}</a><div class="mut sm">${pBadge(p)} ${money(p.price)} · ${p.stock} in stock${p.note?` · <span class="dn">${esc(p.note)}</span>`:''}</div></div><button class="btn sm" data-a="editp" data-id="${p.id}">${ic('edit')}</button></div>`).join(''):`<div class="empty"><h2>No products yet</h2><p>Add a real photo, price and description.</p></div>`}</div>
+ <div class="card flush"><div style="padding:14px 16px"><h2>Storefront preview</h2><p class="mut sm">This is how shoppers see your store.</p></div>
+ ${b.announce?`<div class="annc">${esc(b.announce)}</div>`:''}${b.banner?`<img class="bannerimg" src="${b.banner}" alt="">`:`<div class="bannerimg ph0"></div>`}
+ <div style="padding:16px"><div class="row">${b.logo?`<img src="${b.logo}" alt="" style="width:48px;height:48px;border-radius:10px;object-fit:contain;background:#fff;border:1px solid var(--line)">`:''}<div><div class="b" style="font-size:16px">${esc(b.name)}</div><div class="mut sm">${esc(b.tagline||b.category)}</div></div></div>
+ <div class="pgrid" style="margin-top:14px">${L.slice(0,6).map(p=>`<div class="pc"><div class="im"><img src="${pimg(p)}" alt=""></div><div class="bd2"><span class="nm">${esc(p.name)}</span><span class="pr">${money(p.price)}</span><span class="usd">${usd(p.price)}</span></div></div>`).join('')}</div>
+ <p class="hint" style="margin-top:12px">Store link: <a href="${url}">${esc(url)}</a></p></div></div>`;
+}
+function viewProducts(){const b=myBrand();if(!b||!['active','publishing','draft'].includes(b.status))return needStore('Products');return sellDash(b)}
+function viewCustomers(){
+ const mb=myBrand();if(!isAdmin()&&!mb)return needStore('Customers');
+ const O=(isAdmin()?S.orders:S.orders.filter(o=>o.brandId===mb.id)).filter(o=>!['verifying','cancelled'].includes(o.status));
+ const m={};O.forEach(o=>{const c=m[o.buyerId]||(m[o.buyerId]={name:o.ship.name,phone:o.ship.phone,city:o.ship.city,state:o.ship.state,email:S.users.find(u=>u.id===o.buyerId)?.email||'',n:0,spent:0});c.n++;c.spent+=o.subtotal});
+ const rows=Object.values(m).sort((a,b)=>b.spent-a.spent);
+ return`<div class="page-h"><h1>Customers</h1></div>${rows.length?`<div class="card flush">${rows.map(c=>`<div class="item"><span class="avatar">${esc(initials(c.name))}</span><div class="grow"><div class="b">${esc(c.name)}</div><div class="mut sm">${esc(c.city)}, ${esc(c.state)} · <a href="tel:${esc(c.phone)}">${esc(c.phone)}</a>${c.email?' · '+esc(c.email):''}</div></div><div class="right"><div class="b">${money(c.spent)}</div><div class="mut sm">${c.n} order${c.n>1?'s':''}</div></div></div>`).join('')}</div>`:`<div class="card empty"><h2>No customers yet</h2><p>Customers appear here after their payment is confirmed.</p></div>`}`;
+}
+function viewDiscounts(){
+ const mb=myBrand();if(!mb)return needStore('Discounts');
+ const L=S.discounts.filter(d=>d.brandId===mb.id);
+ return`<div class="page-h"><h1 class="grow">Discounts</h1><button class="btn p" data-a="newdisc">${ic('plus')}Create discount</button></div>${L.length?`<div class="card flush">${L.map(d=>`<div class="item"><div class="grow"><div class="b">${esc(d.code)}</div><div class="mut sm">${d.percent}% off · used ${d.uses} time${d.uses===1?'':'s'}</div></div>${badge(d.active?'Active':'Paused',d.active?'ok':'')}<button class="btn sm" data-a="dtog" data-id="${d.id}">${d.active?'Pause':'Resume'}</button><button class="btn sm d" data-a="ddel" data-id="${d.id}" aria-label="Delete">${ic('trash')}</button></div>`).join('')}</div>`:`<div class="card empty"><h2>No discount codes yet</h2><p>Create a code shoppers can enter at checkout.</p></div>`}`;
+}
+function viewMarketing(){
+ const mb=myBrand();if(!mb)return needStore('Marketing');
+ const url=location.origin+location.pathname+'#/brand/'+mb.id,wa='https://wa.me/?text='+encodeURIComponent('Shop '+mb.name+' on VTXOnline: '+url);
+ return`<div class="page-h"><h1>Marketing</h1></div>
+ <div class="card"><h2>Share your store</h2><p class="mut" style="margin:4px 0 10px">Send this link to customers on WhatsApp, Instagram or anywhere.</p><div class="row gap8"><input class="in" readonly value="${esc(url)}" aria-label="Store link"><button class="btn" data-a="copy" data-v="${esc(url)}">${ic('copy')}Copy</button></div><p style="margin-top:10px"><a class="btn g" href="${wa}" target="_blank" rel="noopener">Share on WhatsApp</a></p></div>
+ <div class="card"><h2>Grow your sales</h2><div class="col" style="margin-top:8px"><div class="row"><div class="grow"><div class="b">Announcement bar</div><div class="mut sm">Show a message at the top of your store.</div></div><a class="btn sm" href="#/store">Edit</a></div><div class="row"><div class="grow"><div class="b">Discount codes</div><div class="mut sm">Reward customers with a percentage off.</div></div><a class="btn sm" href="#/discounts">Create</a></div></div></div>`;
+}
+function calc(L){const by={};L.forEach(({c,p})=>{(by[p.brandId]=by[p.brandId]||{bid:p.brandId,gross:0,disc:0}).gross+=p.price*c.qty});
+ const d=UI.code;Object.values(by).forEach(x=>{x.disc=d&&d.brandId===x.bid?Math.round(x.gross*d.percent)/100:0;x.net=x.gross-x.disc});
+ const v=Object.values(by);return{by,gross:v.reduce((a,x)=>a+x.gross,0),disc:v.reduce((a,x)=>a+x.disc,0),net:v.reduce((a,x)=>a+x.net,0)}}
+function viewBrand(id){
+ const b=brandOf(id);const owner=me()&&b&&(isAdmin()||b.ownerId===me().id);
+ if(!b||(b.status!=='active'&&!owner))return`<div class="card empty"><h2>Store not available</h2><p>This store is not live yet.</p><a class="btn" href="#/market">Back to Market</a></div>`;
+ const L=S.products.filter(p=>p.brandId===b.id&&(pst(p)==='active'||owner)),c=chg(b.id);
+ return`<p style="margin-bottom:12px"><a href="#/market">← Market</a></p>
+ <div class="card flush">${b.announce?`<div class="annc">${esc(b.announce)}</div>`:''}${b.banner?`<img class="bannerimg" src="${b.banner}" alt="">`:`<div class="bannerimg ph0"></div>`}
+ <div style="padding:16px"><div class="row wrap2">${b.logo?`<img src="${b.logo}" alt="" style="width:72px;height:72px;border-radius:14px;object-fit:contain;background:#fff;border:1px solid var(--line)">`:`<span class="avatar" style="width:72px;height:72px;border-radius:14px;font-size:22px">${esc(initials(b.name))}</span>`}<div class="grow"><h1>${esc(b.name)} ${b.status!=='active'?bBadge(b):''}</h1><p class="mut">${esc(b.tagline||b.category)}</p></div><div class="right"><div class="mut sm">Brand index</div><div class="b" style="font-size:18px">${idx(b.id).toFixed(2)}</div>${pct(c)}</div></div>
+ <p style="margin-top:12px;white-space:pre-line">${esc(b.description)}</p>${b.whatsapp?`<p style="margin-top:12px"><a class="btn" href="https://wa.me/${esc(String(b.whatsapp).replace(/\D/g,''))}" target="_blank" rel="noopener">Chat on WhatsApp</a></p>`:''}</div></div>
+ ${L.length?`<div class="pgrid">${L.map(productCard).join('')}</div>`:`<div class="card empty"><h2>No products yet</h2><p>This store has not listed anything.</p></div>`}`;
+}
+/* ---------- VTX AI ---------- */
+const GO=(h,l)=>`[[go:${h}|${l}]]`;
+let AIM=store.get('ai',[]),AIopen=false,AIon=null,AIbusy=false;
+function statusAnswer(){const b=myBrand();
+ const base=`**Publishing** means we are running automatic checks. **Active** means your store or product is live and visible in the Market. **Draft** means a check failed, and the reason is shown next to it (for example: no photo, no price, or a short description).`;
+ if(!me())return base+`\nSign in to see your own store status.`;
+ if(!b)return base+`\nYou have not created a store yet.\n`+GO('#/store','Create store');
+ const m={unpaid:'You still need to pay the listing fee and send your reference.',pending:'Your payment is waiting for the admin to confirm it. It moves to Publishing right after.',publishing:'Your store is publishing now. It becomes Active in a few seconds, and the page updates by itself.',active:'Your store is Active and live.',draft:'Your store is a Draft. Open Create store, check your name and description, and save.',rejected:'Your payment could not be verified. Check the reference and submit again.',suspended:'Your store is suspended. Contact the admin.'}[b.status];
+ return`${base}\n\nYour store right now: **${b.status}**. ${m}\n`+GO('#/store','Open Create store')}
+const KB=[
+{k:['sell','start selling','open brand','open my brand','create store','create a store','upload brand','upload my brand','list my brand','become a seller','my brand','my store','create my store'],a:()=>`To sell on VTXOnline:\n1. Create an account.\n2. Open **Create store** and add your brand name, logo and description.\n3. Pay the one-time listing fee of **${money(S.settings.fee)}** and send your transfer reference.\n4. After the admin confirms, your store goes to **Publishing**, then **Active** (live).\n5. Add products with real photos, prices and descriptions.\n${GO('#/store','Open Create store')}`},
+{k:['listing fee','fee','pay to upload','pay to sell','how much','opay','account number','bank','deposit','transfer'],a:()=>`The one-time listing fee is **${money(S.settings.fee)}**. Transfer it to **${S.settings.account.name}**, ${S.settings.account.bank} **${S.settings.account.number}**, then enter your transfer reference on the Create store page. The admin never pays this fee.\n${GO('#/store','Go to payment')}`},
+{k:['publishing','publish','active','live','draft','status','not showing','not live','go live','why is my','stuck','not visible'],a:statusAnswer},
+{k:['add product','upload product','new product','add item','photo','picture','image','price','description','my product','products','where is my product','where can i see'],a:()=>`Go to **Products** (or **Create store**, which also lists everything you upload) and tap **Add product**. Add a real photo, a price and a description of at least 10 characters. Each new product shows **Publishing**, then **Active** when it passes the checks. If it becomes **Draft**, the reason appears beside it.\n${GO('#/products','Open Products')} ${GO('#/store','Open Create store')}`},
+{k:['order','buy','purchase','checkout','how do i order','place order','shop'],a:()=>`To order: open the **Market**, pick a product, tap **Add to cart** or **Buy now**. At checkout enter your name, phone number, address, city and state (you can also share your GPS location). Pay the total by Opay transfer, enter your transfer reference and tap **Place order**.\n${GO('#/market','Open Market')} ${GO('#/cart','Open Cart')}`},
+{k:['awaiting','verifying','payment check','confirm payment','paid','waiting for payment','not confirmed','my order'],a:()=>`After you place an order, its status is **Awaiting payment check** until the admin sees your transfer and confirms it. Then it becomes **Paid**, the brand owner ships it (**Shipped**), and you tap **I received it** to finish (**Delivered**).\n${GO('#/orders','Open Orders')}`},
+{k:['commission','10%','10 percent','earn','earnings','payout','paid out','my money','how do i get paid'],a:()=>`VTXOnline keeps **${Math.round(rate()*100)}%** of each confirmed order. The brand owner gets the other **${Math.round((1-rate())*100)}%**. Example: a ₦10,000 order pays ${money(10000*(1-rate()))} to the brand and ${money(10000*rate())} to VTXOnline. The admin marks the order **Seller paid out** after sending the money.\n${GO('#/orders','Open Orders')}`},
+{k:['delivery','deliver','location','address','phone','gps','rider'],a:()=>`At checkout the buyer enters name, phone, address, city and state, and can tap **Share my current location**. The brand owner sees these details once payment is confirmed, with a map link if a location was shared.\n${GO('#/cart','Open Cart')}`},
+{k:['chart','index','analytics','going up','going down','graph','trend','market movement'],a:()=>`The **Analytics** page shows a live line chart of every active brand. Each brand has an index near 100 that moves with every update, and confirmed sales push it up. Tap a brand name above the chart to hide or show its line. The movement is simulated and is not real stock-market data.\n${GO('#/chart','Open Analytics')}`},
+{k:['connect','shopify','printify','woocommerce','etsy','wix','import'],a:()=>`Open **Connect store** and choose Shopify, Printify, WooCommerce, Etsy, Wix or Other. **Shopify** tries to import your public products into your store. The others save a request for the admin to set up. Your store must be Active before you can import.\n${GO('#/connect','Open Connect store')}`},
+{k:['discount','code','coupon','promo','voucher','percent off'],a:()=>`Brand owners create codes in **Discounts** (a code and a percentage). Shoppers type the code at checkout and tap **Apply**. The discount only applies to products from that brand.\n${GO('#/discounts','Open Discounts')}`},
+{k:['customers','buyers','who bought'],a:()=>`**Customers** lists people who bought from your store after payment was confirmed, with their phone, city and total spent.\n${GO('#/customers','Open Customers')}`},
+{k:['marketing','share','link','whatsapp','promote','advert','announcement','banner'],a:()=>`**Marketing** gives you your store link to copy or share on WhatsApp. Set an announcement bar and banner photo in **Create store**.\n${GO('#/marketing','Open Marketing')}`},
+{k:['admin','administrator','owner login','admin login'],a:()=>`The admin account approves listing fee payments, confirms order payments, manages brands and marks seller payouts. Admin login details are private and are never shown here. The admin can change the password in **Settings**.\n${GO('#/settings','Open Settings')}`},
+{k:['password','change password','forgot','settings','profile','backup','restore'],a:()=>`**Settings** lets you edit your profile and change your password. The admin can also change the payment account, listing fee and commission, and download or restore a backup.\n${GO('#/settings','Open Settings')}`},
+{k:['sign in','login','log in','sign up','create account','register','account'],a:()=>`Tap **Sign in** at the top right. New here? Choose **Create account** and enter your name, email, phone number and a password of at least 6 characters.\n${GO('#/auth','Sign in or create account')}`},
+{k:['cart','basket','remove from cart'],a:()=>`Your **Cart** keeps what you added. Change quantities with + and −, then tap **Checkout**.\n${GO('#/cart','Open Cart')}`},
+{k:['market','search','category','categories','find'],a:()=>`The **Market** shows every Active product and brand. Use the search box at the top, the category chips, or switch to the **Brands** tab.\n${GO('#/market','Open Market')}`},
+{k:['menu','where is','navigate','tabs'],a:()=>`Use the sidebar on a computer, or the bottom tabs on a phone: Home, Market, Orders, Menu and Settings. **Menu** holds everything else, like Create store, Products, Analytics and Connect store.\n${GO('#/menu','Open Menu')}`},
+{k:['data','device','browser','other people','share data','database','lost my','disappear'],a:()=>`This version saves data in the browser you are using, so other people's phones do not see your store yet. Use **Settings → Download backup** regularly. The owner can connect a shared database to make everything visible to everyone.`},
+{k:['balance','withdraw','withdrawal','cash out','my earnings','wallet','send my money','payout to'],a:()=>`Your **Balance** grows by the order total minus the ${Math.round(rate()*100)}% commission when a buyer confirms delivery. Tap **Withdraw** to send it to a bank account (Opay or any bank) or a crypto wallet (USDT). The admin sends the money and marks it paid. POS sales go straight to you and do not add to the balance.\n${GO('#/wallet','Open Balance')}`},
+{k:['crypto','usdt','bnb','international','outside nigeria','foreign','dollar','binance'],a:()=>`If you are outside Nigeria, pay the listing fee (or an order) with **USDT on the BNB Smart Chain (BEP-20)** to the address shown on the payment screen. Send only USDT on that network, then enter your transaction hash as the reference.\n${GO('#/store','Open Create store')}`},
+{k:['pos','point of sale','design','designing','design studio','mockup'],a:()=>`**VTX POS** (open /pos on this site) uses the same login. Staff can sell in person, manage products, see online orders, and use the **Design studio** to design clothes, bags, shoes and more, then save the design as a product.`},
+{k:['who are you','what are you','vtx ai','ai'],a:()=>`I am **VTX AI**, the in-app guide. Ask me how anything works and I will explain it and take you to the right page.`}
+];
+const PH={home:'**Home** shows your setup progress, key numbers and trending products.\n'+GO('#/market','Open Market'),market:'**Market** lists every Active product. Search, filter by category, or switch to Brands.',orders:'**Orders** shows your purchases, and for brand owners the orders for your store. Admin can confirm payments here.',products:'**Products** lists your items with status: Publishing, Active or Draft.',store:'**Create store** is where you set up your brand, pay the listing fee, watch the status (Publishing → Active), and see your products and a storefront preview.',customers:'**Customers** lists people who bought from you.',chart:'**Analytics** shows the live brand index chart and your store numbers.',marketing:'**Marketing** has your store link and sharing tools.',discounts:'**Discounts** creates promo codes for checkout.',connect:'**Connect store** imports products from Shopify and logs requests for Printify and others.',menu:'**Menu** is the full list of pages.',settings:'**Settings** edits your profile and password.',admin:'**Admin** approves payments, manages brands and shows revenue.',cart:'**Cart** is what you plan to buy.',checkout:'**Checkout** collects delivery details and shows how to pay.',product:'This is a product page. Choose a quantity, then **Add to cart** or **Buy now**.',brand:'This is a store page with its products.',auth:'Sign in, or choose Create account if you are new.'};
+function localAI(q){
+ const t=q.toLowerCase().trim();
+ if(/^(hi|hello|hey|good (morning|afternoon|evening))\b/.test(t))return`Hello! I am VTX AI. Ask me how anything in the app works, like selling, paying the listing fee, publishing or ordering.`;
+ if(/this page|where am i|what is this|what do i do|explain (this|the page)|lost|confused|don.?t understand|help/.test(t))return(PH[route().name]||PH.home)+`\n\nAsk me anything else you want explained.`;
+ let best=null,bs=0;KB.forEach(e=>{let s=0;e.k.forEach(k=>{if(t.includes(k))s+=k.split(' ').length*2+(k.length>5?1:0)});if(s>bs){bs=s;best=e}});
+ if(best)return best.a();
+ return`I am not sure I understood that. I can explain: selling and Create store, the listing fee, Publishing and Active, adding products, ordering and delivery, the 10% commission, discounts, the chart and connecting a store. Try one of those, or tap **Explain this page**.`;
+}
+function aiContext(){const b=myBrand();return{page:route().name,signedIn:!!me(),role:me()?.role||'guest',storeStatus:b?.status||'none',fee:S.settings.fee,commissionPercent:Math.round(rate()*100),account:S.settings.account,productCount:b?S.products.filter(p=>p.brandId===b.id).length:0}}
+async function askAI(text){
+ if(AIbusy)return;AIM.push({r:'u',t:text});AIbusy=true;drawAI();
+ try{let msgs=AIM.slice(-10).map(m=>({role:m.r==='u'?'user':'assistant',content:m.t}));while(msgs.length&&msgs[0].role!=='user')msgs.shift();
+  const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),20000);
+  const res=await fetch('/.netlify/functions/vtx-ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:msgs,context:aiContext()}),signal:ctl.signal});clearTimeout(to);
+  if(!res.ok)throw 0;const j=await res.json();if(!j.reply)throw 0;AIM.push({r:'a',t:j.reply});AIon=true}
+ catch(e){AIM.push({r:'a',t:localAI(text)});AIon=false}
+ AIM=AIM.slice(-30);store.set('ai',AIM);AIbusy=false;drawAI()}
+function aiFmt(t){const btns=[];let x=esc(t).replace(/\[\[go:([^|\]]+)\|([^\]]+)\]\]/g,(m,h,l)=>{if(/^#\/[a-z0-9\/_-]*$/i.test(h))btns.push([h,l]);return''});
+ x=x.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>').trim();
+ return x+(btns.length?`<div class="aibtns">${btns.map(([h,l])=>`<button class="btn sm" data-a="aigo" data-h="${h}">${l}</button>`).join('')}</div>`:'')}
+function drawAI(){
+ const el=$('#ai');if(!el)return;const keep=AIopen&&$('#aiq')?$('#aiq').value:'';
+ const Q=['How do I sell my brand?','Why is my store Publishing?','Explain this page','How is the 10% charged?','How do I order?'];
+ el.innerHTML=`<button class="aibtn" data-a="ai" aria-label="${AIopen?'Close':'Open'} VTX AI">${AIopen?ic('x'):ic('spark')}</button>
+ <section class="aip" ${AIopen?'':'hidden'} aria-label="VTX AI"><div class="aih"><img src="${LOGO}" alt=""><div class="grow"><div class="b">VTX AI</div><div class="sm" style="opacity:.7">${AIon===true?'Online assistant':'Built-in guide'}</div></div><button class="tbtn" data-a="ai" aria-label="Close">${ic('x')}</button></div>
+ <div class="aim" id="aim"><div class="am a">Hi, I am VTX AI. Ask me how anything in the app works and I will explain it and take you there.</div>${AIM.map(m=>`<div class="am ${m.r}">${m.r==='u'?esc(m.t):aiFmt(m.t)}</div>`).join('')}${AIbusy?'<div class="am a"><i class="spin"></i> Thinking…</div>':''}</div>
+ <div class="aiq">${Q.map(x=>`<button class="chip" data-a="aiq" data-q="${esc(x)}">${esc(x)}</button>`).join('')}</div>
+ <form class="aif" data-f="ai"><input class="in" id="aiq" name="q" autocomplete="off" placeholder="Ask VTX AI anything" value="${esc(keep)}" aria-label="Ask VTX AI"><button class="btn p" type="submit" ${AIbusy?'disabled':''}>Send</button></form></section>`;
+ const m=$('#aim');if(m)m.scrollTop=m.scrollHeight;if(AIopen&&!AIbusy&&innerWidth>900)$('#aiq')?.focus();
+}
+
+/* ---------- wallet ---------- */
+let W=null,AW=null;
+async function loadWallet(){try{W=await api('wallet.state')}catch(e){toast(e.message,1)}if(route().name==='wallet')render()}
+async function loadWd(){try{AW=await api('wallet.admin')}catch(e){toast(e.message,1)}if(route().name==='admin')render()}
+function withdrawalsHtml(){
+ if(!AW){loadWd();return'<div class="card empty"><p><i class="spin"></i> Loading…</p></div>'}
+ const L=AW.withdrawals;if(!L.length)return'<div class="card empty"><h2>No withdrawals yet</h2><p>Requests from brand owners appear here.</p></div>';
+ return L.map(l=>{const d=l.dest||{};const st=l.status==='paid'?'ok':l.status==='rejected'?'cr':'wa';
+  return`<div class="card"><div class="row wrap2"><div class="grow"><div class="b">${esc(l.userName)} · ${money(l.amount)}${l.method==='crypto'?` <span class="mut">(≈ ${l.usdt} USDT)</span>`:''}</div><div class="mut sm">${esc(l.userEmail)} · ${esc(l.userPhone)} · ${fdate(l.created)}</div></div>${badge(l.status,st)}</div>
+  <div style="margin-top:8px" class="sm">${l.method==='bank'?`<b>Bank:</b> ${esc(d.bankName)}<br><b>Account name:</b> ${esc(d.accountName)}<br><b>Account number:</b> ${esc(d.accountNumber)} <button class="btn sm" data-a="copy" data-v="${esc(d.accountNumber)}">${ic('copy')}</button>`:`<b>Network:</b> ${esc(d.network)}<br><b>Address:</b> <span style="word-break:break-all">${esc(d.address)}</span> <button class="btn sm" data-a="copy" data-v="${esc(d.address)}">${ic('copy')}</button>`}${l.txref?`<br><b>Sent ref:</b> ${esc(l.txref)}`:''}</div>
+  ${l.status==='pending'?`<div class="row gap8" style="margin-top:12px"><button class="btn p sm" data-a="wact" data-v="paid" data-id="${l.id}">I have sent it</button><button class="btn d sm" data-a="wact" data-v="reject" data-id="${l.id}">Reject</button></div>`:''}</div>`}).join('')}
+function viewWallet(){
+ const mb=myBrand();if(!mb)return needStore('Balance');
+ if(Date.now()-(UI.wAt||0)>4000){UI.wAt=Date.now();loadWallet()}
+ if(!W)return`<div class="page-h"><h1>Balance</h1></div><div class="card empty"><p><i class="spin"></i> Loading…</p></div>`;
+ const m=W.summary,min=W.minWithdraw;
+ return`<div class="page-h"><h1 class="grow">Balance</h1><button class="btn p" data-a="withdraw" ${m.available<min?'disabled':''}>Withdraw</button></div>
+ <div class="card"><div class="mut sm">Available to withdraw</div><div class="b" style="font-size:30px;letter-spacing:-.01em">${money(m.available)}</div><div class="usd">${usd(m.available)}</div>${m.available<min?`<p class="hint">The minimum withdrawal is ${money(min)}.</p>`:''}</div>
+ <div class="card flush"><div class="grid g3" style="gap:0">${[['Pending',m.pending,'Paid or shipped orders'],['Total earned',m.earned,'After commission'],['Withdrawn',m.withdrawn,m.held?money(m.held)+' on the way':'']].map((s,i)=>`<div class="stat" style="${i?'border-left:1px solid var(--line)':''}"><div class="mut sm">${s[0]}</div><div class="n" style="font-size:17px">${money(s[1])}</div><div class="mut sm">${s[2]}</div></div>`).join('')}</div></div>
+ <div class="ban"><div>You earn the order total minus the ${Math.round(rate()*100)}% VTXOnline commission. Money is added to your balance when the buyer confirms delivery. POS sales are paid to you directly and do not add to this balance.</div></div>
+ <div class="card flush"><div class="row" style="padding:14px 16px"><h2 class="grow" style="margin:0">History</h2></div>${W.entries.length?W.entries.map(e=>e.type==='credit'?`<div class="item" style="cursor:default"><div class="grow"><div class="b">${esc(e.note||'Order credit')}</div><div class="mut sm">${fdate(e.created)}</div></div><span class="b up">+${money(e.amount)}</span></div>`:`<div class="item" style="cursor:default"><div class="grow"><div class="b">Withdrawal to ${e.method==='bank'?esc(e.dest.bankName):esc(e.dest.network)}</div><div class="mut sm">${fdate(e.created)}${e.txref?' · Ref '+esc(e.txref):''}</div></div>${badge(e.status,e.status==='paid'?'ok':e.status==='rejected'?'cr':'wa')}<span class="b">${e.status==='rejected'?'':'−'}${money(e.amount)}</span></div>`).join(''):'<div class="empty"><h2>No activity yet</h2><p>Earnings from delivered orders show up here.</p></div>'}</div>`}
+function openWithdraw(){
+ const sv=W.saved||{},b=sv.bank||{},w=sv.wallet||{},nets=['BNB Smart Chain (BEP-20)','Ethereum (ERC-20)','Polygon','TRON (TRC-20)'];
+ openModal('Withdraw money',`<form id="wf" data-f="withdraw"><input type="hidden" name="method" id="wmeth" value="bank">
+ <p class="mut sm" style="margin-bottom:10px">Available: <b>${money(W.summary.available)}</b></p>
+ <label class="f"><span>Amount (₦)</span><input class="in" name="amount" type="number" min="${W.minWithdraw}" max="${W.summary.available}" step="any" required inputmode="decimal"></label>
+ <div class="chips"><button type="button" class="chip wmc on" data-a="wm" data-v="bank">Bank account</button><button type="button" class="chip wmc" data-a="wm" data-v="crypto">Crypto wallet</button></div>
+ <div id="wb"><label class="f"><span>Bank name</span><input class="in" name="bankName" required value="${esc(b.bankName||'Opay')}"></label><label class="f"><span>Account name</span><input class="in" name="accountName" required value="${esc(b.accountName||'')}"></label><label class="f"><span>Account number</span><input class="in" name="accountNumber" required value="${esc(b.accountNumber||'')}" inputmode="numeric"></label></div>
+ <div id="wc" hidden><label class="f"><span>Network</span><select class="in" name="network" disabled>${nets.map(n=>`<option ${w.network===n?'selected':''}>${n}</option>`).join('')}</select></label><label class="f"><span>USDT wallet address</span><input class="in" name="address" required disabled value="${esc(w.address||'')}"><div class="hint">Paid out in USDT. Double-check the address and network, because crypto transfers cannot be reversed.</div></label></div></form>`,
+ `<button class="btn" data-a="closem">Cancel</button><button class="btn p" type="submit" form="wf">Request withdrawal</button>`);
+ document.querySelectorAll('#wc input,#wc select').forEach(i=>i.disabled=true)}
+/* ---------- product modal ---------- */
+let pImgs=[],logoDraft=null,proofDraft=null,bannerDraft=null;
+function openProduct(id){
+ const p=id?S.products.find(x=>x.id===id):null;pImgs=p?[...(p.images||[])]:[];
+ openModal(p?'Edit product':'Add product',`<form id="pf" data-f="product"><input type="hidden" name="id" value="${p?.id||''}">
+ <label class="f"><span>Product name</span><input class="in" name="name" required value="${esc(p?.name||'')}"></label>
+ <div class="grid g2 keep"><label class="f"><span>Price (₦)</span><input class="in" name="price" type="number" min="1" step="any" required value="${p?.price||''}"></label><label class="f"><span>Stock</span><input class="in" name="stock" type="number" min="0" required value="${p?.stock??10}"></label></div>
+ <label class="f"><span>Category</span><select class="in" name="category">${CATS.map(c=>`<option ${p?.category===c?'selected':''}>${c}</option>`).join('')}</select></label>
+ <label class="f"><span>Description</span><textarea class="in" name="description" required>${esc(p?.description||'')}</textarea></label>
+ <label class="f"><span>Product photos (up to 4)</span><input class="in" type="file" id="pfiles" accept="image/*" multiple><div class="hint">Use real photos of your product. The first photo is the cover.</div></label><div class="row wrap2 gap8" id="pthumbs"></div></form>`,
+ `<button class="btn" data-a="closem">Cancel</button><button class="btn p" type="submit" form="pf">Save product</button>`);
+ drawThumbs();
+}
+function drawThumbs(){const t=$('#pthumbs');if(t)t.innerHTML=pImgs.map((s,i)=>`<div style="position:relative"><img class="thumb" style="width:64px;height:64px" src="${s}" alt=""><button type="button" class="tbtn" data-a="rmimg" data-i="${i}" aria-label="Remove photo" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;background:#303030;border-radius:50%">${ic('x')}</button></div>`).join('')}
+
+/* ---------- shared server ---------- */
+let TOKEN=localStorage.getItem('vtx_token')||'',VER=0,LOADED=false,SYNCERR='',RATE=0,SYNCING=false;
+function setToken(t){TOKEN=t;if(t)localStorage.setItem('vtx_token',t);else localStorage.removeItem('vtx_token')}
+async function api(a,body={}){
+ let r;try{r=await fetch('/api',{method:'POST',headers:{'content-type':'application/json',...(TOKEN?{authorization:'Bearer '+TOKEN}:{})},body:JSON.stringify({a,...body})})}catch(e){throw new Error('No internet connection. Try again.')}
+ let j={};try{j=await r.json()}catch(e){}
+ if(r.status===401&&TOKEN&&a!=='login'){setToken('');S.session=null}
+ if(!r.ok)throw new Error(j.error||(r.status===404?'The server part is not set up on this site yet.':'Server error ('+r.status+')'));
+ return j}
+async function safe(fn){try{return await fn()}catch(e){toast(e.message||'Something went wrong',1)}}
+async function sync(force){
+ if(SYNCING&&!force)return;SYNCING=true;
+ try{const j=await api('state',{v:force?0:VER});SYNCERR='';if(j.same)return;VER=j.v;applyState(j,force)}
+ catch(e){if(!LOADED){SYNCERR=e.message;renderBoot()}}
+ finally{SYNCING=false}}
+function applyState(j,force){
+ const st=j.state,prev=S.orders||[],first=!LOADED;
+ ['users','brands','products','orders','payments','connections','discounts'].forEach(k=>S[k]=st[k]||[]);
+ S.settings=st.settings;S.wd=st.wd||0;S.series=st.series||{};S.session=st.me||null;
+ S.brands.forEach(b=>{if(b.id==='b_vtx'&&!b.logo)b.logo=LOGO});
+ LOADED=true;
+ if(S.session&&!me()){S.session=null}
+ const pc=pendingCount();document.title=(pc?`(${pc}) `:'')+'VTXOnline Shopping';
+ notifyNew(prev,first);
+ const r=route().name,ae=document.activeElement,typing=ae&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName);
+ const sig=JSON.stringify([myBrand()?.status,S.products.filter(p=>myBrand()&&p.brandId===myBrand().id).map(p=>p.status)]);
+ const sigChanged=sig!==UI.sig;UI.sig=sig;
+ if(force||first){render();return}
+ if(r==='chart'){paintChart();return}
+ if($('#modal').innerHTML||typing)return;
+ if(['checkout','auth'].includes(r))return;
+ if(r==='store'&&!sigChanged)return;
+ render();
+}
+function notifyNew(prev,first){
+ const u=me();if(!u)return;const mb=myBrand();
+ if(isAdmin()){const n=S.payments.filter(p=>p.status==='pending').length;if(!first&&n>(UI.pp||0))toast('New brand listing payment to review');UI.pp=n}
+ if(first)return;
+ const pid=new Set(prev.map(o=>o.id)),pm=new Map(prev.map(o=>[o.id,o.status]));
+ const fresh=S.orders.filter(o=>!pid.has(o.id)&&o.buyerId!==u.id&&(isAdmin()||(mb&&o.brandId===mb.id)));
+ if(fresh.length)toast(`New order ${fresh[0].id} · ${money(fresh[0].subtotal)}${fresh.length>1?` (+${fresh.length-1} more)`:''}`);
+ else S.orders.filter(o=>mb&&o.brandId===mb.id&&o.buyerId!==u.id&&o.status==='paid'&&pm.get(o.id)==='verifying').forEach(o=>toast(`Order ${o.id} is paid. Ship it!`));
+}
+function renderBoot(){
+ $('#app').innerHTML=SYNCERR?`<div class="authw"><div class="authc"><div class="lg0"><img src="${LOGO}" alt=""></div><div class="card"><h2>Can't reach the server</h2><p class="mut" style="margin:6px 0 12px">${esc(SYNCERR)}</p><button class="btn p full" data-a="retry">Try again</button></div></div></div>`
+ :`<div class="authw"><div class="authc" style="text-align:center"><div class="lg0"><img src="${LOGO}" alt=""></div><p class="mut"><i class="spin"></i> Loading VTXOnline…</p></div></div>`}
+function pollLoop(){const mb=myBrand();const busy=(mb&&['publishing','pending'].includes(mb.status))||(mb&&S.products.some(p=>p.brandId===mb.id&&p.status==='publishing'));
+ setTimeout(async()=>{if(!document.hidden)await sync(false);pollLoop()},busy?2000:6000)}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync(false)});
+async function loadRate(){try{const c=store.get('rate',null);if(c&&Date.now()-c.t<6*36e5){RATE=c.r;return}const r=await fetch('https://open.er-api.com/v6/latest/USD');const j=await r.json();if(j.rates&&j.rates.NGN){RATE=j.rates.NGN;store.set('rate',{r:RATE,t:Date.now()})}}catch(e){const c=store.get('rate',null);if(c)RATE=c.r}}
+const usdRate=()=>(S.settings&&S.settings.usdRate>0)?S.settings.usdRate:(RATE||1500);
+const usd=n=>'≈ $'+(n/usdRate()).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+async function uploadData(d){return(await api('upload',{d})).url}
+async function prep(file,max,q){toast('Uploading photo…');return uploadData(await compress(file,max,q))}
+const hasLocal=()=>!!localStorage.getItem('vtx_products')&&!localStorage.getItem('vtx_migrated');
+function migBanner(){return isAdmin()&&hasLocal()?`<div class="ban wa"><div class="grow"><b>Your old products and orders are still only on this phone.</b> Move them to the shared server so everyone can see them.</div><button class="btn p sm" data-a="migrate">Move now</button></div>`:''}
+async function migrateLocal(){
+ if(!confirm('Move the brands, products, orders and accounts saved on this phone to the shared server?'))return;
+ await safe(async()=>{
+  const cache=new Map();
+  const fix=async v=>{if(typeof v==='string'&&v.startsWith('data:image')){if(!cache.has(v))cache.set(v,await uploadData(v));return cache.get(v)}return v};
+  const conv=async o=>{const r={...o};for(const k of ['logo','banner','proof'])if(r[k])r[k]=await fix(r[k]);if(Array.isArray(r.images)){const im=[];for(const x of r.images)im.push(await fix(x));r.images=im}return r};
+  let n=0;
+  for(const c of ['brands','products','users','orders','payments','discounts','connections']){
+   const recs=store.get(c,[]);
+   for(let i=0;i<recs.length;i+=15){const chunk=[];for(const r of recs.slice(i,i+15))chunk.push(await conv(r));await api('migrate',{c,recs:chunk});n+=chunk.length;toast('Moving data… '+n)}}
+  const st=store.get('settings',null);if(st)await api('migrate',{c:'settings',recs:[st]});
+  localStorage.setItem('vtx_migrated','1');await sync(true);toast('Done. Your data is on the shared server.')})}
+
+/* ---------- actions ---------- */
+const A={
+ retry(){SYNCERR='';renderBoot();sync(true)},
+ migrate(){migrateLocal()},
+ ai(){AIopen=!AIopen;drawAI()},
+ aiq(a){askAI(a.dataset.q)},
+ aigo(a){const h=a.dataset.h;if(/^#\/[a-z0-9\/_-]*$/i.test(h)){if(innerWidth<=900){AIopen=false;drawAI()}go(h)}},
+ newdisc(){openModal('Create discount',`<form id="df" data-f="disc"><label class="f"><span>Discount code</span><input class="in" name="code" required maxlength="20" pattern="[A-Za-z0-9]+" placeholder="e.g. WELCOME10"><div class="hint">Letters and numbers only.</div></label><label class="f"><span>Percentage off</span><input class="in" name="percent" type="number" min="1" max="90" required></label></form>`,`<button class="btn" data-a="closem">Cancel</button><button class="btn p" type="submit" form="df">Create</button>`)},
+ dtog(a){safe(async()=>{await api('disc.toggle',{id:a.dataset.id});await sync(true)})},
+ ddel(a){safe(async()=>{await api('disc.del',{id:a.dataset.id});await sync(true)})},
+ applycode(){const f=$('#co');UI.draft={};new FormData(f).forEach((v,k)=>UI.draft[k]=v);const c=$('#codein').value.trim().toUpperCase();if(!c){UI.code=null;return render()}
+  safe(async()=>{const j=await api('code',{code:c,brandIds:cartLines().map(x=>x.p.brandId)});if(!j.discount){UI.code=null;toast('That code is not valid for the items in your cart.',1)}else{UI.code=j.discount;toast(j.discount.percent+'% off applied')}render()})},
+ closem(a,e){if(a.classList.contains('ov')&&e.target!==a)return;closeModal()},
+ tosign(){UI.amode='in'},
+ amode(a){UI.amode=a.dataset.v;render()},
+ mtab(a){UI.mtab=a.dataset.v;render()},
+ cat(a){UI.cat=a.dataset.v;render()},
+ otab(a){UI.otab=a.dataset.v;render()},
+ atab(a){UI.atab=a.dataset.v;if(UI.atab==='withdrawals')loadWd();render()},
+ wm(a){const v=a.dataset.v;$('#wmeth').value=v;$('#wb').hidden=v!=='bank';$('#wc').hidden=v!=='crypto';document.querySelectorAll('#wb input,#wc input,#wc select').forEach(i=>{i.disabled=i.closest('#wb')?v!=='bank':v!=='crypto'});document.querySelectorAll('.wmc').forEach(c=>c.classList.toggle('on',c.dataset.v===v))},
+ withdraw(){openWithdraw()},
+ wact(a){const id=a.dataset.id,v=a.dataset.v;let txref='';if(v==='paid'){txref=prompt('Enter the transaction reference or hash of the payment you sent:');if(txref===null)return}else if(!confirm('Reject this withdrawal? The money returns to their balance.'))return;safe(async()=>{await api('wallet.act',{id,v,txref});await loadWd();await sync(true);toast('Withdrawal updated')})},
+ tog(a){const i=a.dataset.id;UI.hidden=UI.hidden.includes(i)?UI.hidden.filter(x=>x!==i):[...UI.hidden,i];paintChart()},
+ copy(a){navigator.clipboard?.writeText(a.dataset.v).then(()=>toast('Copied'),()=>toast('Copy failed',1))},
+ pimg(a){const i=+a.dataset.i;const p=S.products.find(x=>x.id===route().id);$('#pmain').src=p.images[i];document.querySelectorAll('.thumbs img').forEach((im,k)=>im.classList.toggle('on',k===i))},
+ pq(a){const el=$('#pq');el.textContent=Math.max(1,+el.textContent+ +a.dataset.v)},
+ add(a){const p=S.products.find(x=>x.id===a.dataset.id);const q=a.dataset.q?+$('#pq').textContent:1;addCart(p,q);toast('Added to cart');render()},
+ buynow(a){const p=S.products.find(x=>x.id===a.dataset.id);addCart(p,+$('#pq').textContent);go('#/checkout')},
+ cq(a){const c=S.cart.find(x=>x.pid===a.dataset.id),p=S.products.find(x=>x.id===a.dataset.id);c.qty=Math.max(1,Math.min(p.stock,c.qty+ +a.dataset.v));persist('cart');render()},
+ crm(a){S.cart=S.cart.filter(x=>x.pid!==a.dataset.id);persist('cart');render()},
+ tocheckout(){if(!me()){UI.next='#/checkout';UI.amode='in';toast('Sign in to place your order.');go('#/auth')}else go('#/checkout')},
+ geo(){const st=$('#geost');if(!navigator.geolocation){st.textContent='Location is not available on this device.';return}st.textContent='Getting your location…';navigator.geolocation.getCurrentPosition(p=>{const f=$('#co');f.lat.value=p.coords.latitude.toFixed(6);f.lng.value=p.coords.longitude.toFixed(6);st.textContent='Location added to your order.'},()=>{st.textContent='Could not get your location. Fill in the address instead.'},{timeout:10000})},
+ async logout(){setToken('');S.session=null;await sync(true);toast('Signed out');go('#/home')},
+ ord(a){const id=a.dataset.id,v=a.dataset.v;if(v==='cancel'&&!confirm('Cancel this order?'))return;safe(async()=>{await api('order.act',{id,v});await sync(true);toast('Order updated')})},
+ newp(){openProduct()},editp(a){openProduct(a.dataset.id)},
+ rmimg(a){pImgs.splice(+a.dataset.i,1);drawThumbs()},
+ delp(a){if(!confirm('Delete this product?'))return;const id=a.dataset.id;safe(async()=>{await api('product.delete',{id});S.cart=S.cart.filter(c=>c.pid!==id);persist('cart');await sync(true)})},
+ pay(a){const id=a.dataset.id,v=a.dataset.v;safe(async()=>{await api('pay.act',{id,v});await sync(true);toast(v==='approve'?'Approved. The store is publishing.':'Payment rejected')})},
+ bst(a){const id=a.dataset.id,v=a.dataset.v;safe(async()=>{await api('brand.admin',{id,v});await sync(true)})},
+ bdel(a){if(!confirm('Delete this brand and its products?'))return;const id=a.dataset.id;safe(async()=>{await api('brand.admin',{id,v:'delete'});await sync(true)})},
+ conn(a){const n=a.dataset.v,mb=myBrand();
+  openModal('Connect '+n,`<form id="cf" data-f="conn"><input type="hidden" name="platform" value="${n}">${n==='Shopify'?(mb&&mb.status==='active'?'':`<div class="ban wa"><div>Open and activate your brand first, then import products.</div></div>`):''}<label class="f"><span>Store link</span><input class="in" name="url" required placeholder="${n==='Shopify'?'your-store.myshopify.com':'https://your-store.com'}"></label><p class="hint">${n==='Shopify'?'Public products are imported into your brand. Prices are copied as numbers, so check them after import.':'Your request is saved and the admin will set up the sync with you.'}</p></form>`,`<button class="btn" data-a="closem">Cancel</button><button class="btn p" type="submit" form="cf">Connect</button>`)},
+ cdel(a){const id=a.dataset.id;safe(async()=>{await api('conn.del',{id});await sync(true)})},
+ export(){const d={...S};delete d.cart;const bl=new Blob([JSON.stringify(d)],{type:'application/json'});const l=document.createElement('a');l.href=URL.createObjectURL(bl);l.download='vtxonline-backup.json';l.click()}
+};
+function addCart(p,q=1){const c=S.cart.find(x=>x.pid===p.id);const n=Math.min(p.stock,(c?c.qty:0)+q);if(c)c.qty=n;else S.cart.push({pid:p.id,qty:n});persist('cart')}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-a]');if(!a)return;const f=A[a.dataset.a];if(f)f(a,e)});
+document.addEventListener('change',async e=>{
+ const t=e.target;
+ if(t.dataset.c==='sort'){UI.sort=t.value;$('#grid').innerHTML=gridHtml()}
+ try{
+ if(t.id==='pfiles'){for(const f of [...t.files].slice(0,4-pImgs.length))pImgs.push(await prep(f,800,.72));drawThumbs();t.value=''}
+ if(t.id==='logof'&&t.files[0]){logoDraft=await prep(t.files[0],300,.85);$('#logoprev').innerHTML=`<img class="thumb" style="width:64px;height:64px;margin-top:8px;object-fit:contain" src="${logoDraft}" alt="">`}
+ if(t.id==='bannerf'&&t.files[0]){bannerDraft=await prep(t.files[0],1200,.7);$('#bannerprev').innerHTML=`<img class="thumb" style="width:120px;height:48px;margin-top:8px" src="${bannerDraft}" alt="">`}
+ if(t.id==='prooff'&&t.files[0]){proofDraft=await prep(t.files[0],900,.6);$('#proofprev').innerHTML=`<img class="proof" src="${proofDraft}" alt="">`}
+ }catch(err){toast(err.message||'That photo could not be used.',1)}
+});
+document.addEventListener('input',e=>{if(e.target.id==='q'&&route().name==='market'){UI.q=e.target.value;const g=$('#grid');if(g)g.innerHTML=gridHtml()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();if(AIopen){AIopen=false;drawAI()}}});
+
+const F={
+ withdraw(f,d){return safe(async()=>{const m=d.get('method');await api('wallet.withdraw',{amount:+d.get('amount'),method:m,bank:{bankName:d.get('bankName'),accountName:d.get('accountName'),accountNumber:d.get('accountNumber')},wallet:{network:d.get('network'),address:(d.get('address')||'').trim()},rate:usdRate()});closeModal();UI.wAt=0;await loadWallet();toast('Withdrawal requested. The admin will send it soon.')})},
+ ai(f,d){const t=(d.get('q')||'').trim().slice(0,400);if(t)askAI(t)},
+ search(f){UI.q=$('#q').value;UI.mtab='products';go('#/market')},
+ disc(f,d){return safe(async()=>{await api('disc.save',{code:d.get('code'),percent:+d.get('percent')});closeModal();await sync(true);toast('Discount created')})},
+ storeset(f,d){return safe(async()=>{await api('brand.save',{name:d.get('name'),tagline:d.get('tagline'),description:d.get('description'),announce:d.get('announce'),whatsapp:d.get('whatsapp'),logo:logoDraft,banner:bannerDraft});logoDraft=null;bannerDraft=null;await sync(true);toast('Store saved')})},
+ signin(f,d){return safe(async()=>{const j=await api('login',{email:d.get('email').trim().toLowerCase(),pass:await sha(d.get('password'))});setToken(j.token);await sync(true);toast('Welcome back, '+(me()?.name||'').split(' ')[0]);const n=UI.next||'#/home';UI.next='#/home';go(n)})},
+ signup(f,d){return safe(async()=>{const j=await api('signup',{name:d.get('name').trim(),email:d.get('email').trim().toLowerCase(),phone:d.get('phone').trim(),pass:await sha(d.get('password'))});setToken(j.token);await sync(true);toast('Account created');const n=UI.next||'#/home';UI.next='#/home';go(n)})},
+ profile(f,d){return safe(async()=>{await api('profile',{name:d.get('name'),phone:d.get('phone'),email:d.get('email')||''});await sync(true);toast('Profile saved')})},
+ pass(f,d){return safe(async()=>{await api('password',{old:await sha(d.get('old')),new:await sha(d.get('new'))});f.reset();toast('Password updated')})},
+ acct(f,d){return safe(async()=>{await api('settings',{account:{name:d.get('name'),bank:d.get('bank'),number:d.get('number')},crypto:{address:d.get('cryptoaddr').trim()},minWithdraw:+d.get('minw')||0,fee:+d.get('fee'),commission:Math.min(1,Math.max(0,+d.get('comm')/100)),usdRate:+d.get('usd')||0});await sync(true);toast('Platform settings saved')})},
+ brand(f,d){return safe(async()=>{await api('brand.create',{name:d.get('name'),category:d.get('category'),description:d.get('description'),logo:logoDraft||''});logoDraft=null;await sync(true);toast(isAdmin()?'Brand created':'Brand created. Now pay the listing fee.')})},
+ paylist(f,d){return safe(async()=>{await api('pay.submit',{ref:d.get('ref'),proof:proofDraft||''});proofDraft=null;await sync(true);toast('Payment submitted for review')})},
+ product(f,d){return safe(async()=>{await api('product.save',{id:d.get('id')||'',data:{name:d.get('name'),price:+d.get('price'),stock:+d.get('stock'),category:d.get('category'),description:d.get('description'),images:[...pImgs]}});closeModal();await sync(true);toast('Saved. Publishing your product…')})},
+ checkout(f,d){return safe(async()=>{const L=cartLines();if(!L.length)return;
+  const ship={name:d.get('name'),phone:d.get('phone'),address:d.get('address'),city:d.get('city'),state:d.get('state'),landmark:d.get('landmark'),lat:d.get('lat'),lng:d.get('lng')};
+  await api('order.create',{items:L.map(x=>({pid:x.c.pid,qty:x.c.qty})),ship,ref:d.get('ref'),code:UI.code?UI.code.code:''});
+  UI.code=null;UI.draft=null;S.cart=[];persist('cart');UI.otab='mine';await sync(true);toast('Order placed. We will confirm your payment.');go('#/orders')})},
+ conn(f,d){return safe(async()=>{const platform=d.get('platform'),url=d.get('url').trim(),mb=myBrand();let status='requested',count=0;
+  if(platform==='Shopify'){
+   if(!mb||mb.status!=='active')throw new Error('Open and activate your brand before importing from Shopify.');
+   let base=url.replace(/\/+$/,'');if(!/^https?:\/\//.test(base))base='https://'+base;
+   try{toast('Importing products…');const r=await fetch(base+'/products.json?limit=30');if(!r.ok)throw 0;const j=await r.json();const L=(j.products||[]).slice(0,30);if(!L.length)throw 0;
+    const products=L.map(sp=>({name:sp.title,price:parseFloat(sp.variants?.[0]?.price)||0,stock:20,category:CATS.includes(sp.product_type)?sp.product_type:'Other',description:(sp.body_html||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,600)||sp.title,images:(sp.images||[]).slice(0,3).map(i=>i.src)}));
+    const r2=await api('product.import',{products});status='imported';count=r2.count}
+   catch(e){toast('Could not read that store directly. Request saved for the admin.',1)}}
+  await api('conn.add',{platform,url,status,count});closeModal();await sync(true);if(status==='imported')toast(count+' products imported');else if(platform!=='Shopify')toast('Connection request saved')})}
+};
+document.addEventListener('submit',async e=>{const f=e.target.closest('form[data-f]');if(!f)return;e.preventDefault();
+ const btn=f.querySelector('[type=submit]')||(f.id?document.querySelector(`[form="${f.id}"]`):null);if(btn)btn.disabled=true;
+ try{await F[f.dataset.f]?.(f,new FormData(f))}finally{if(btn)btn.disabled=false}});
+
+/* ---------- start ---------- */
+(async()=>{load();if(!location.hash)location.hash='#/home';renderBoot();
+ addEventListener('resize',()=>{if(route().name==='chart')paintChart()});
+ await sync(true);drawAI();pollLoop();
+ loadRate().then(()=>{if(LOADED&&!['checkout','auth'].includes(route().name)&&!$('#modal').innerHTML)render()})})();
+</script>
+</body>
+</html>
