@@ -224,6 +224,9 @@ button.nav{width:100%;border:0;background:none;text-align:left;font:inherit;font
 @media(max-width:900px){.aibtn{bottom:88px;right:14px;width:48px;height:48px}.aip{left:8px;right:8px;bottom:8px;top:64px;width:auto;max-width:none;height:auto}}
 .usd{display:block;font-size:12px;color:var(--mut);font-weight:500}
 .b.right .usd,.right .usd{text-align:right}
+.logo-anim{animation:logoPulse 1.7s ease-in-out infinite;transform-origin:center}
+@keyframes logoPulse{0%,100%{transform:scale(.8);opacity:.85;filter:drop-shadow(0 3px 5px rgba(0,0,0,.12))}50%{transform:scale(1.18);opacity:1;filter:drop-shadow(0 18px 24px rgba(0,0,0,.38))}}
+@media(prefers-reduced-motion:reduce){.logo-anim{animation:none}}
 </style>
 </head>
 <body>
@@ -231,6 +234,750 @@ button.nav{width:100%;border:0;background:none;text-align:left;font:inherit;font
 <div id="modal"></div>
 <div id="toast" role="status"></div>
 <div id="ai"></div>
+<script>
+
+function detectDemo(){return fetch('/api').then(function(r){if(r.ok)return r.json().then(function(j){return !(j&&j.ok)},function(){return true});return r.status===404||r.status===405}).catch(function(){return false})}
+function installDemo(){
+ if(window.__DEMO)return;window.__DEMO=true;
+ const process={env:{PAYSTACK_SECRET_KEY:'demo',PAYSTACK_PUBLIC_KEY:'demo'}};
+ const wcrypto=window.crypto;
+ class Buf extends Uint8Array{
+  static from(x,enc){let b;if(typeof x==='string'){if(enc==='hex'){b=new Uint8Array(x.length/2);for(let i=0;i<b.length;i++)b[i]=parseInt(x.substr(i*2,2),16)}else if(enc==='base64'||enc==='base64url'){let s=x.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const bin=atob(s);b=Uint8Array.from(bin,c=>c.charCodeAt(0))}else b=new TextEncoder().encode(x)}else b=x;const r=new Buf(b.length);r.set(b);return r}
+  toString(enc){if(enc==='hex')return Array.from(this).map(v=>v.toString(16).padStart(2,'0')).join('');if(enc==='base64'||enc==='base64url'){let bin='';this.forEach(v=>{bin+=String.fromCharCode(v)});const s=btoa(bin);return enc==='base64url'?s.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''):s}return new TextDecoder().decode(this)}
+ }
+ const Buffer=Buf;
+ /* sha256 */
+ const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+ function sha256(bytes){const H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];const l=bytes.length,t=((l+9+63)>>6)<<6,m=new Uint8Array(t);m.set(bytes);m[l]=0x80;const dv=new DataView(m.buffer);dv.setUint32(t-4,(l*8)>>>0);dv.setUint32(t-8,Math.floor(l/0x20000000));const w=new Array(64);
+  for(let o=0;o<t;o+=64){for(let i=0;i<16;i++)w[i]=dv.getUint32(o+i*4);for(let i=16;i<64;i++){const a=w[i-15],b=w[i-2];const s0=((a>>>7)|(a<<25))^((a>>>18)|(a<<14))^(a>>>3),s1=((b>>>17)|(b<<15))^((b>>>19)|(b<<13))^(b>>>10);w[i]=(w[i-16]+s0+w[i-7]+s1)|0}
+   let [a,b,c,d,e,f,g,h]=H;for(let i=0;i<64;i++){const S1=((e>>>6)|(e<<26))^((e>>>11)|(e<<21))^((e>>>25)|(e<<7)),ch=(e&f)^(~e&g),t1=(h+S1+ch+K[i]+w[i])|0,S0=((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10)),mj=(a&b)^(a&c)^(b&c),t2=(S0+mj)|0;h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0}
+   H[0]=(H[0]+a)|0;H[1]=(H[1]+b)|0;H[2]=(H[2]+c)|0;H[3]=(H[3]+d)|0;H[4]=(H[4]+e)|0;H[5]=(H[5]+f)|0;H[6]=(H[6]+g)|0;H[7]=(H[7]+h)|0}
+  const out=new Uint8Array(32),ov=new DataView(out.buffer);H.forEach((v,i)=>ov.setUint32(i*4,v>>>0));return out}
+ const enc=s=>new TextEncoder().encode(s),hex=b=>Array.from(b).map(v=>v.toString(16).padStart(2,'0')).join('');
+ function hmac256(key,msg){let k=enc(key);if(k.length>64)k=sha256(k);const kp=new Uint8Array(64);kp.set(k);const ip=kp.map(v=>v^0x36),op=kp.map(v=>v^0x5c),m=enc(msg);const i1=new Uint8Array(64+m.length);i1.set(ip);i1.set(m,64);const inner=sha256(i1),o1=new Uint8Array(96);o1.set(op);o1.set(inner,64);return hex(sha256(o1))}
+ const crypto={randomBytes:n=>{const b=new Buf(n);wcrypto.getRandomValues(b);return b},
+  scryptSync:(ph,salt)=>({toString:()=>hex(sha256(enc(salt+':'+ph)))}),
+  createHmac:(alg,key)=>({d:'',update(x){this.d+=x;return this},digest(){if(alg!=='sha256')throw new Error('unsupported');return hmac256(key,this.d)}}),
+  timingSafeEqual:(a,b)=>{if(a.length!==b.length)return false;let r=0;for(let i=0;i<a.length;i++)r|=a[i]^b[i];return r===0}};
+ /* storage */
+ const MEM={};let LSOK=true;try{localStorage.setItem('__t','1');localStorage.removeItem('__t')}catch(e){LSOK=false}
+ const rawGet=(n,k)=>{const key='vtxdemo:'+n+':'+k;try{if(LSOK){const v=localStorage.getItem(key);if(v!==null)return v}}catch(e){}return MEM[key]!==undefined?MEM[key]:null};
+ const rawSet=(n,k,v)=>{const key='vtxdemo:'+n+':'+k;try{if(LSOK){localStorage.setItem(key,v);delete MEM[key];return}}catch(e){}MEM[key]=v};
+ function demoStore(name){return{async get(k,o){const v=rawGet(name,k);if(v===null)return null;return o&&o.type==='json'?JSON.parse(v):v},async set(k,v){rawSet(name,k,v)},async setJSON(k,v){rawSet(name,k,JSON.stringify(v))}}}
+ /* ---- server code (same as netlify/functions/api.mjs) ---- */
+// VTXOnline shared backend (Netlify Function + Netlify Blobs).
+
+
+const ADMIN_HASH = '06b91202fcab8d562d4d706bc4184325f1239daf9ea1c3354968d8ef901fa924';
+const CATS = ['Fashion','Shoes','Beauty','Accessories','Electronics','Home','Food','Other'];
+const N = 48;
+const AI_SYSTEM = `You are VTX AI, the in-app guide for VTXOnline Shopping, a marketplace where brand owners sell products and shoppers order from them.
+Explain things simply and directly, in under 120 words. Use plain text with **bold** for key terms. Never invent features.
+Never reveal or guess passwords, admin credentials or private data.
+
+How the app works:
+- Sign in / Create account (name, email, phone, password 6+ chars).
+- Create store (#/store): brand name, logo, description, tagline, announcement bar, banner, WhatsApp. Non-admin owners pay a one-time listing fee online with Paystack (card, bank transfer or USSD). After payment the store automatically shows Publishing (automatic checks, a few seconds) and then Active (live). Draft means a check failed.
+- Products (#/products): add product with real photo, price, description (10+ chars). New products show Publishing, then Active. Draft shows the reason.
+- Market (#/market): shoppers browse Active products and brands, search, filter by category.
+- Cart and Checkout: name, phone, address, city, state, optional GPS location, optional discount code, tap Pay and pay the total online with Paystack (card, bank transfer or USSD). The order is confirmed automatically; unpaid orders are cancelled after 30 minutes and can be paid from Orders with Pay now.
+- Orders (#/orders): Awaiting payment -> Paid (automatic after Paystack confirms) -> Shipped (brand owner) -> Delivered (buyer taps I received it). Brand owners see delivery details after payment is confirmed.
+- Commission: VTXOnline keeps the commission percent (given in context) of each confirmed order; the brand gets the rest. Admin marks Seller paid out.
+- Customers (#/customers), Discounts (#/discounts: code + percent), Marketing (#/marketing: store link, WhatsApp share), Analytics (#/chart: live brand index chart, simulated movement, sales push brands up), Connect store (#/connect: Shopify product import; Printify, WooCommerce, Etsy, Wix, Other save a request for the admin).
+- Balance (#/wallet): sellers earn the payout (after commission) of each online order once the buyer confirms delivery. Sellers can withdraw to a bank account (Opay or any bank) or a crypto wallet (USDT on BNB Smart Chain, Ethereum, Polygon or TRON). The admin sends the money manually and marks the withdrawal paid or rejected. POS sales are paid directly to the seller and do not add to the balance.
+- VTX POS (/pos/): staff sign in with the same VTX Online login to sell in person, manage products and see online orders. It also has a Design studio to design clothes, bags, shoes and more and save them as products.
+- Settings (#/settings): profile, password; admin also payment account, fee, commission, backup.
+- Data is stored in the user's own browser in this version; other people's devices do not see it until a shared database is connected.
+
+When useful, end with navigation tags in exactly this form: [[go:#/store|Open Create store]]. Allowed targets: #/home #/market #/orders #/products #/customers #/chart #/marketing #/discounts #/store #/wallet #/connect #/menu #/settings #/cart #/auth #/admin.
+If the question is unrelated to the app, say you can only help with VTXOnline.`;
+const PLATFORMS = ['Shopify', 'UJU Store','Printify','WooCommerce','Etsy','Wix','Other store'];
+
+class HttpError extends Error { constructor(s, m) { super(m); this.status = s; } }
+const bad = (m, s = 400) => { throw new HttpError(s, m); };
+const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type, authorization', 'access-control-allow-methods': 'GET, POST, OPTIONS' };
+const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { 'content-type': 'application/json', 'cache-control': 'no-store', ...CORS } });
+const r2 = n => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+const rid = p => p + crypto.randomBytes(6).toString('hex');
+const str = (v, max = 200) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+const num = v => (typeof v === 'number' && isFinite(v) ? v : Number(v) || 0);
+const pst = p => p.status || 'active';
+
+async function getStores() { return { main: demoStore('vtx'), img: demoStore('vtx-img') }; }
+
+class DB {
+  constructor(st) { this.st = st; this.d = {}; this.dirty = new Set(); }
+  async get(k, def) { if (!(k in this.d)) { const v = await this.st.get(k, { type: 'json' }); this.d[k] = v ?? def; } return this.d[k]; }
+  col(k) { return this.get(k, []); }
+  mark(k) { this.dirty.add(k); }
+  async flush() {
+    if (!this.dirty.size) return;
+    const meta = await this.get('meta', {});
+    if (this.dirty.has('brands') || this.dirty.has('products')) {
+      const all = [...(await this.col('brands')), ...(await this.col('products'))].filter(x => x.status === 'publishing').map(x => x.publishAt || 0);
+      meta.nextAt = all.length ? Math.min(...all) : 0;
+    }
+    meta.v = (meta.v || 0) + 1;
+    this.dirty.add('meta');
+    for (const k of this.dirty) await this.st.setJSON(k, this.d[k]);
+    this.dirty.clear();
+  }
+}
+
+const hashPw = (ph, salt) => crypto.scryptSync(ph, salt, 32).toString('hex');
+function setPw(u, ph) { u.salt = crypto.randomBytes(8).toString('hex'); u.pw = hashPw(ph, u.salt); delete u.pass; }
+function checkPw(u, ph) {
+  if (typeof ph !== 'string' || !/^[a-f0-9]{64}$|^x/.test(ph)) return false;
+  if (u.pw) { const a = Buffer.from(hashPw(ph, u.salt)), b = Buffer.from(u.pw); return a.length === b.length && crypto.timingSafeEqual(a, b); }
+  return !!u.pass && u.pass === ph;
+}
+const pubUser = u => { const { pw, salt, pass, ...r } = u; return r; };
+
+async function init(db) {
+  let meta = await db.get('meta', null);
+  if (meta) return;
+  const t = Date.now();
+  const secret = crypto.randomBytes(32).toString('hex');
+  db.d.secret = { s: secret }; db.mark('secret');
+  db.d.meta = { v: 1, nextAt: 0, lastTick: 0, bump: {} };
+  db.d.settings = { fee: 1500, commission: 0.1, usdRate: 0, account: { name: 'Nnaemeka Chiagozie Cyprian', bank: 'Opay', number: '7015166537' } }; db.mark('settings');
+  db.d.users = [{ id: 'u_admin', name: 'VTX Admin', email: (process.env.ADMIN_EMAIL || 'admin@vtxonline.com').toLowerCase(), phone: '', pass: ADMIN_HASH, role: 'admin', created: t }]; db.mark('users');
+  db.d.brands = [{ id: 'b_vtx', ownerId: 'u_admin', name: 'VTX Apparel', category: 'Fashion', description: 'Sharp, modern streetwear from the VTX studio. Official VTXOnline brand.', logo: '', status: 'active', created: t, featured: true }]; db.mark('brands');
+  for (const k of ['products', 'orders', 'payments', 'connections', 'discounts', 'ledger', 'possales']) { db.d[k] = []; db.mark(k); }
+  db.d.series = {}; db.mark('series');
+  db.mark('meta');
+  await db.flush();
+}
+
+/* ----- auth ----- */
+const b64 = s => Buffer.from(s).toString('base64url');
+async function signToken(db, uid) {
+  const { s } = await db.get('secret', null);
+  const p = uid + '.' + (Date.now() + 30 * 864e5);
+  return b64(p) + '.' + crypto.createHmac('sha256', s).update(p).digest('hex');
+}
+async function authUser(req, db) {
+  const h = req.headers.get('authorization') || '';
+  if (!h.startsWith('Bearer ')) return null;
+  const [pb, sig] = h.slice(7).split('.');
+  if (!pb || !sig) return null;
+  let p; try { p = Buffer.from(pb, 'base64url').toString(); } catch (e) { return null; }
+  const { s } = await db.get('secret', null);
+  const good = crypto.createHmac('sha256', s).update(p).digest('hex');
+  if (good.length !== sig.length || !crypto.timingSafeEqual(Buffer.from(good), Buffer.from(sig))) return null;
+  const [uid, exp] = p.split('.');
+  if (Date.now() > Number(exp)) return null;
+  return (await db.col('users')).find(u => u.id === uid) || null;
+}
+function need(u) { if (!u) bad('Please sign in first.', 401); return u; }
+function needAdmin(u) { need(u); if (u.role !== 'admin') bad('Admin only.', 403); return u; }
+
+/* ----- time based work ----- */
+async function sweep(db, now) {
+  const brands = await db.col('brands'), prods = await db.col('products');
+  brands.forEach(b => { if (b.status === 'publishing' && (b.publishAt || 0) <= now) { b.status = (b.name && b.description) ? 'active' : 'draft'; db.mark('brands'); } });
+  prods.forEach(p => {
+    if (p.status === 'publishing' && (p.publishAt || 0) <= now) {
+      const why = !(p.images && p.images.length) ? 'Add at least one real photo.' : !(p.price > 0) ? 'Set a price above 0.' : (p.description || '').trim().length < 10 ? 'Write a longer description (10+ characters).' : '';
+      if (why) { p.status = 'draft'; p.note = why; } else { p.status = 'active'; p.note = ''; }
+      db.mark('products');
+    }
+  });
+}
+async function tick(db, now) {
+  const meta = await db.get('meta', {}), series = await db.get('series', {}), brands = await db.col('brands');
+  const steps = Math.max(1, Math.min(6, Math.floor((now - (meta.lastTick || 0)) / 12000)));
+  meta.bump = meta.bump || {};
+  const live = brands.filter(b => b.status === 'active');
+  for (let s = 0; s < steps; s++) {
+    live.forEach(b => {
+      let a = series[b.id];
+      if (!a) { let v = 70 + Math.random() * 60; a = []; for (let i = 0; i < N; i++) { v = Math.max(10, v * (1 + (Math.random() - .5) * .05)); a.push(+v.toFixed(2)); } series[b.id] = a; }
+      const bump = meta.bump[b.id] || 0, last = a[a.length - 1];
+      a.push(+Math.max(5, last * (1 + (Math.random() - .5) * .04 + bump * .01)).toFixed(2)); if (a.length > N) a.shift();
+      meta.bump[b.id] = bump * .7;
+    });
+  }
+  Object.keys(series).forEach(id => { if (!live.some(b => b.id === id)) delete series[id]; });
+  meta.lastTick = now; db.mark('series'); db.mark('meta');
+}
+
+/* ----- visibility ----- */
+async function buildState(db, u) {
+  const admin = u?.role === 'admin';
+  const [users, brands, products, orders, payments, conns, discs] = await Promise.all(['users', 'brands', 'products', 'orders', 'payments', 'connections', 'discounts'].map(k => db.col(k)));
+  const settings = await db.get('settings', {}), series = await db.get('series', {});
+  const mine = u ? brands.filter(b => b.ownerId === u.id).map(b => b.id) : [];
+  const activeIds = new Set(brands.filter(b => b.status === 'active').map(b => b.id));
+  const S = {
+    settings: { fee: settings.fee, commission: settings.commission, usdRate: settings.usdRate || 0, account: settings.account, minWithdraw: settings.minWithdraw ?? 1000, payOn: payConfigured(), paystackKey: process.env.PAYSTACK_PUBLIC_KEY || '' },
+    wd: admin ? (await db.col('ledger')).filter(l => l.type === 'withdrawal' && l.status === 'pending').length : 0,
+    series, me: u ? u.id : null,
+    brands: admin ? brands : brands.filter(b => activeIds.has(b.id) || mine.includes(b.id)),
+    products: admin ? products : products.filter(p => (pst(p) === 'active' && activeIds.has(p.brandId)) || mine.includes(p.brandId)),
+    users: admin ? users.map(pubUser) : (u ? [pubUser(u)] : []),
+    payments: admin ? payments : (u ? payments.filter(p => p.userId === u.id) : []),
+    connections: admin ? conns : (u ? conns.filter(c => c.userId === u.id) : []),
+    discounts: admin ? discs : discs.filter(d => mine.includes(d.brandId)),
+    orders: []
+  };
+  if (u) {
+    const blank = { name: '', phone: '', address: '', city: '', state: '', landmark: '' };
+    S.orders = admin ? orders : orders.filter(o => o.buyerId === u.id || mine.includes(o.brandId)).map(o => {
+      const asSeller = mine.includes(o.brandId) && o.buyerId !== u.id;
+      if (!asSeller) return o;
+      const hide = ['verifying', 'cancelled'].includes(o.status);
+      return { ...o, ref: '', ship: hide ? blank : o.ship };
+    });
+  }
+  return S;
+}
+
+/* ----- helpers ----- */
+const okImg = s => typeof s === 'string' && (/^\/api\?img=[a-f0-9]{24}$/.test(s) || /^https:\/\/[^\s"'<>]{4,500}$/.test(s));
+const okUrl = s => s === '' || okImg(s);
+const myBrandOf = async (db, u) => (await db.col('brands')).find(b => b.ownerId === u.id);
+function cleanProduct(d) {
+  const name = str(d.name, 80), description = str(d.description, 1500), price = num(d.price), stock = Math.max(0, Math.floor(num(d.stock)));
+  if (!name) bad('Product name is required.');
+  if (!(price > 0)) bad('Enter a price above 0.');
+  const category = CATS.includes(d.category) ? d.category : 'Other';
+  const images = (Array.isArray(d.images) ? d.images : []).filter(okImg).slice(0, 4);
+  const out = { name, description, price, stock, category, images };
+  if ('barcode' in d) out.barcode = str(d.barcode, 40);
+  if ('cost' in d) out.cost = Math.max(0, num(d.cost));
+  if ('low' in d) out.low = Math.max(0, Math.floor(num(d.low)));
+  return out;
+}
+const counted = o => ['paid', 'shipped', 'delivered'].includes(o.status);
+
+/* ----- Paystack online payments ----- */
+const payConfigured = () => !!(process.env.PAYSTACK_SECRET_KEY && process.env.PAYSTACK_PUBLIC_KEY);
+async function paystackVerify(ref) {
+  const key = process.env.PAYSTACK_SECRET_KEY; if (!key) bad('Online payment is not set up yet.', 503);
+  let r; try { r = await fetch('https://api.paystack.co/transaction/verify/' + encodeURIComponent(ref), { headers: { authorization: 'Bearer ' + key } }); } catch (e) { bad('Could not reach the payment provider. Try again.', 502); }
+  const j = await r.json().catch(() => ({}));
+  return r.ok && j.status ? j.data : null;
+}
+async function fulfill(db, ref, u) {
+  const now = Date.now();
+  if (ref.startsWith('VTXO-')) {
+    const orders = await db.col('orders'); let mine = orders.filter(o => o.payRef === ref);
+    if (u) mine = mine.filter(o => o.buyerId === u.id);
+    if (!mine.length) return { paid: false, error: 'Order not found.' };
+    if (mine.every(o => !['verifying', 'cancelled'].includes(o.status))) return { paid: true, already: true };
+    const data = await paystackVerify(ref);
+    if (!data || data.status !== 'success') return { paid: false, status: data ? data.status : 'unknown' };
+    const expected = Math.round(mine.reduce((a, o) => a + o.subtotal, 0) * 100);
+    if (data.currency !== 'NGN' || data.amount < expected) return { paid: false, error: 'The amount paid does not match the order.' };
+    const prods = await db.col('products'), meta = await db.get('meta', {}); meta.bump = meta.bump || {};
+    mine.forEach(o => {
+      if (o.status === 'cancelled') o.items.forEach(i => { const p = prods.find(x => x.id === i.pid); if (p) p.stock = Math.max(0, p.stock - i.qty); });
+      if (['verifying', 'cancelled'].includes(o.status)) {
+        o.status = 'paid'; o.paidAt = now; o.payMethod = 'Paystack'; o.payTx = String(data.id || ''); o.note = '';
+        meta.bump[o.brandId] = (meta.bump[o.brandId] || 0) + Math.min(8, 2 + o.subtotal / 20000);
+      }
+    });
+    db.mark('orders'); db.mark('products'); db.mark('meta'); return { paid: true };
+  }
+  if (ref.startsWith('VTXF-')) {
+    const pays = await db.col('payments'); const p = pays.find(x => x.reference === ref && (!u || x.userId === u.id));
+    if (!p) return { paid: false, error: 'Payment not found.' };
+    if (p.status === 'approved') return { paid: true, already: true };
+    const data = await paystackVerify(ref);
+    if (!data || data.status !== 'success') return { paid: false, status: data ? data.status : 'unknown' };
+    if (data.currency !== 'NGN' || data.amount < Math.round(p.amount * 100)) return { paid: false, error: 'The amount paid does not match the listing fee.' };
+    p.status = 'approved'; p.paidAt = now; p.payTx = String(data.id || '');
+    const b = (await db.col('brands')).find(x => x.id === p.brandId);
+    if (b && ['unpaid', 'rejected', 'pending'].includes(b.status)) { b.status = 'publishing'; b.publishAt = now + 3000; db.mark('brands'); }
+    db.mark('payments'); return { paid: true };
+  }
+  return { paid: false, error: 'Unknown reference.' };
+}
+async function cleanupUnpaid(db, now) {
+  const orders = await db.col('orders'), prods = await db.col('products');
+  orders.forEach(o => {
+    if (o.status === 'verifying' && o.payRef && now - o.created > 30 * 60 * 1000) {
+      o.status = 'cancelled'; o.note = 'Not paid in time';
+      o.items.forEach(i => { const p = prods.find(x => x.id === i.pid); if (p) p.stock += i.qty; });
+      db.mark('orders'); db.mark('products');
+    }
+  });
+}
+
+/* ----- wallet ----- */
+async function ensureCredits(db, userId) {
+  const brandIds = (await db.col('brands')).filter(b => b.ownerId === userId).map(b => b.id);
+  if (!brandIds.length) return;
+  const orders = await db.col('orders'), led = await db.col('ledger'); let ch = false;
+  orders.forEach(o => {
+    if (brandIds.includes(o.brandId) && o.status === 'delivered' && !o.payoutDone && !led.some(l => l.orderId === o.id)) {
+      led.push({ id: rid('l_'), userId, type: 'credit', orderId: o.id, amount: o.payout, created: Date.now(), note: 'Order ' + o.id }); ch = true;
+    }
+  });
+  if (ch) db.mark('ledger');
+}
+function walletSummary(led, orders, brandIds, userId) {
+  const mine = led.filter(l => l.userId === userId);
+  const credits = r2(mine.filter(l => l.type === 'credit').reduce((a, l) => a + l.amount, 0));
+  const live = mine.filter(l => l.type === 'withdrawal' && l.status !== 'rejected');
+  const out = r2(live.reduce((a, l) => a + l.amount, 0));
+  return {
+    available: r2(credits - out), earned: credits,
+    withdrawn: r2(mine.filter(l => l.type === 'withdrawal' && l.status === 'paid').reduce((a, l) => a + l.amount, 0)),
+    held: r2(mine.filter(l => l.type === 'withdrawal' && l.status === 'pending').reduce((a, l) => a + l.amount, 0)),
+    pending: r2(orders.filter(o => brandIds.includes(o.brandId) && ['paid', 'shipped'].includes(o.status)).reduce((a, o) => a + o.payout, 0))
+  };
+}
+const NETWORKS = ['BNB Smart Chain (BEP-20)', 'Ethereum (ERC-20)', 'Polygon', 'TRON (TRC-20)'];
+
+/* ----- actions ----- */
+async function act(body, db, u, st) {
+  const a = body.a, now = Date.now();
+  switch (a) {
+    case 'state': {
+      const meta = await db.get('meta', {});
+      const needSweep = meta.nextAt && now >= meta.nextAt, needTick = now - (meta.lastTick || 0) >= 12000;
+      if (body.v && body.v === meta.v && !needSweep && !needTick) return { same: true, v: meta.v };
+      if (needSweep) await sweep(db, now);
+      if (needTick) { await tick(db, now); await cleanupUnpaid(db, now); }
+      await db.flush();
+      const m2 = await db.get('meta', {});
+      return { v: m2.v, state: await buildState(db, u) };
+    }
+    case 'signup': {
+      const name = str(body.name, 60), email = str(body.email, 120).toLowerCase(), phone = str(body.phone, 30);
+      if (!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || phone.length < 5) bad('Enter your name, a valid email and phone number.');
+      if (!/^[a-f0-9]{64}$|^x/.test(body.pass || '')) bad('Invalid password.');
+      const users = await db.col('users');
+      if (users.some(x => x.email === email)) bad('That email already has an account. Sign in instead.');
+      const nu = { id: rid('u_'), name, email, phone, role: 'user', created: now }; setPw(nu, body.pass);
+      users.push(nu); db.mark('users');
+      return { token: await signToken(db, nu.id) };
+    }
+    case 'login': {
+      const email = str(body.email, 120).toLowerCase();
+      const users = await db.col('users'), x = users.find(y => y.email === email);
+      if (!x || !checkPw(x, body.pass)) { await new Promise(r => setTimeout(r, 400)); bad('Email or password is incorrect.'); }
+      if (!x.pw) { setPw(x, body.pass); db.mark('users'); }
+      return { token: await signToken(db, x.id) };
+    }
+    case 'profile': {
+      need(u); const users = await db.col('users'), x = users.find(y => y.id === u.id);
+      x.name = str(body.name, 60) || x.name; x.phone = str(body.phone, 30);
+      if (u.role === 'admin' && body.email) {
+        const e = str(body.email, 120).toLowerCase();
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) bad('Enter a valid email.');
+        if (users.some(y => y.email === e && y.id !== x.id)) bad('That email is already used.');
+        x.email = e;
+      }
+      db.mark('users'); return { ok: 1 };
+    }
+    case 'password': {
+      need(u); const users = await db.col('users'), x = users.find(y => y.id === u.id);
+      if (!checkPw(x, body.old)) bad('Current password is incorrect.');
+      if (!/^[a-f0-9]{64}$|^x/.test(body.new || '')) bad('Invalid password.');
+      setPw(x, body.new); db.mark('users'); return { ok: 1 };
+    }
+    case 'settings': {
+      needAdmin(u); const s = await db.get('settings', {});
+      const ac = body.account || {};
+      s.account = { name: str(ac.name, 80) || s.account.name, bank: str(ac.bank, 40) || s.account.bank, number: str(ac.number, 20) || s.account.number };
+      s.minWithdraw = Math.max(0, num(body.minWithdraw));
+      s.fee = Math.max(0, num(body.fee)); s.commission = Math.min(1, Math.max(0, num(body.commission))); s.usdRate = Math.max(0, num(body.usdRate));
+      db.mark('settings'); return { ok: 1 };
+    }
+    case 'upload': {
+      need(u); const d = body.d;
+      const m = typeof d === 'string' && d.match(/^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/);
+      if (!m) bad('That image could not be used.');
+      if (d.length > 1_400_000) bad('That photo is too large.');
+      const id = crypto.randomBytes(12).toString('hex');
+      await st.img.set(id, d);
+      return { url: '/api?img=' + id };
+    }
+    case 'brand.create': {
+      need(u); const brands = await db.col('brands');
+      if (brands.some(b => b.ownerId === u.id)) bad('You already have a store.');
+      const name = str(body.name, 40), description = str(body.description, 1000);
+      if (!name || !description) bad('Add a brand name and description.');
+      const logo = okUrl(body.logo || '') ? (body.logo || '') : '';
+      const admin = u.role === 'admin';
+      brands.push({ id: rid('b_'), ownerId: u.id, name, category: CATS.includes(body.category) ? body.category : 'Other', description, logo, status: admin ? 'publishing' : 'unpaid', publishAt: now + 6000, created: now });
+      db.mark('brands'); return { ok: 1 };
+    }
+    case 'brand.save': {
+      need(u); const b = await myBrandOf(db, u); if (!b) bad('Create your store first.');
+      b.name = str(body.name, 40) || b.name; b.tagline = str(body.tagline, 80); b.description = str(body.description, 1000) || b.description;
+      b.announce = str(body.announce, 100); b.whatsapp = str(body.whatsapp, 30);
+      if (body.logo && okImg(body.logo)) b.logo = body.logo;
+      if (body.banner && okImg(body.banner)) b.banner = body.banner;
+      if (b.status === 'draft') { b.status = 'publishing'; b.publishAt = now + 4000; }
+      db.mark('brands'); return { ok: 1 };
+    }
+    case 'pay.submit': {
+      need(u); const b = await myBrandOf(db, u);
+      if (!b || !['unpaid', 'rejected'].includes(b.status)) bad('Nothing to pay for right now.');
+      bad('Manual payments are no longer accepted. Please pay online.');
+      const ref = str(body.ref, 80);
+      const s = await db.get('settings', {}), pays = await db.col('payments');
+      pays.push({ id: rid('pay_'), brandId: b.id, userId: u.id, amount: s.fee, ref, proof: okUrl(body.proof || '') ? (body.proof || '') : '', status: 'pending', created: now });
+      b.status = 'pending'; db.mark('payments'); db.mark('brands'); return { ok: 1 };
+    }
+    case 'pay.act': {
+      needAdmin(u); const pays = await db.col('payments'), p = pays.find(x => x.id === body.id); if (!p) bad('Payment not found.', 404);
+      const b = (await db.col('brands')).find(x => x.id === p.brandId);
+      if (body.v === 'approve') { p.status = 'approved'; if (b) { b.status = 'publishing'; b.publishAt = now + 8000; } }
+      else if (body.v === 'reject') { p.status = 'rejected'; if (b) b.status = 'rejected'; }
+      else bad('Unknown action.');
+      db.mark('payments'); db.mark('brands'); return { ok: 1 };
+    }
+    case 'brand.admin': {
+      needAdmin(u); const brands = await db.col('brands'), b = brands.find(x => x.id === body.id); if (!b) bad('Brand not found.', 404);
+      if (body.v === 'delete') {
+        if (b.id === 'b_vtx') bad('The VTX Apparel brand cannot be deleted.');
+        db.d.brands = brands.filter(x => x.id !== b.id); db.d.products = (await db.col('products')).filter(p => p.brandId !== b.id); db.mark('brands'); db.mark('products');
+      } else if (['active', 'suspended'].includes(body.v)) { if (b.id === 'b_vtx' && body.v === 'suspended') bad('The VTX Apparel brand cannot be suspended.'); b.status = body.v; db.mark('brands'); }
+      else bad('Unknown action.');
+      return { ok: 1 };
+    }
+    case 'product.save': {
+      need(u); const b = await myBrandOf(db, u); if (!b || !['active', 'publishing', 'draft'].includes(b.status)) bad('Your store must be created and paid before adding products.');
+      const data = cleanProduct(body.data || {}), prods = await db.col('products');
+      if (data.barcode && prods.some(x => x.brandId === b.id && x.barcode === data.barcode && x.id !== body.id)) bad('Another product already uses that barcode.');
+      const meta = { status: 'publishing', publishAt: now + 6000, note: '' };
+      if (body.id) {
+        const p = prods.find(x => x.id === body.id); if (!p) bad('Product not found.', 404);
+        if (p.brandId !== b.id && u.role !== 'admin') bad('Not your product.', 403);
+        Object.assign(p, data, meta);
+      } else prods.push({ id: rid('p_'), brandId: b.id, created: now, ...data, ...meta });
+      db.mark('products'); return { ok: 1 };
+    }
+    case 'product.import': {
+      need(u); const b = await myBrandOf(db, u); if (!b || b.status !== 'active') bad('Your store must be Active before importing.');
+      const prods = await db.col('products'); let n = 0; const src = str(body.source, 30) || 'import';
+      for (const d of (Array.isArray(body.products) ? body.products : []).slice(0, 60)) {
+        try {
+          const data = cleanProduct(d), ext = str(d.extId, 120), meta = { status: 'publishing', publishAt: now + 6000, note: '' };
+          const ex = ext ? prods.find(x => x.brandId === b.id && x.extId === ext) : null;
+          if (ex) Object.assign(ex, data, meta); else prods.push({ id: rid('p_'), brandId: b.id, created: now, source: src, ...(ext ? { extId: ext } : {}), ...data, ...meta });
+          n++;
+        } catch (e) { /* skip bad rows */ }
+      }
+      db.mark('products'); return { count: n };
+    }
+    case 'product.delete': {
+      need(u); const prods = await db.col('products'), p = prods.find(x => x.id === body.id); if (!p) return { ok: 1 };
+      const b = (await db.col('brands')).find(x => x.id === p.brandId);
+      if (u.role !== 'admin' && b?.ownerId !== u.id) bad('Not your product.', 403);
+      db.d.products = prods.filter(x => x.id !== p.id); db.mark('products'); return { ok: 1 };
+    }
+    case 'code': {
+      const code = str(body.code, 20).toUpperCase(); const ids = Array.isArray(body.brandIds) ? body.brandIds : [];
+      const d = (await db.col('discounts')).find(x => x.code === code && x.active && ids.includes(x.brandId));
+      return { discount: d ? { id: d.id, code: d.code, percent: d.percent, brandId: d.brandId } : null };
+    }
+    case 'order.create': {
+      need(u);
+      const items = Array.isArray(body.items) ? body.items.slice(0, 50) : []; if (!items.length) bad('Your cart is empty.');
+      const sh = body.ship || {};
+      const ship = { name: str(sh.name, 80), phone: str(sh.phone, 30), address: str(sh.address, 250), city: str(sh.city, 60), state: str(sh.state, 60), landmark: str(sh.landmark, 120), lat: str(sh.lat, 20), lng: str(sh.lng, 20) };
+      if (!ship.name || ship.phone.length < 5 || !ship.address || !ship.city || !ship.state) bad('Fill in your name, phone number, address, city and state.');
+      if (!payConfigured()) bad('Online payment is not set up yet. Please try again later.', 503);
+      const ref = str(body.ref, 80), payRef = 'VTXO-' + crypto.randomBytes(8).toString('hex').toUpperCase();
+      const prods = await db.col('products'), brands = await db.col('brands'), settings = await db.get('settings', {});
+      const by = {};
+      for (const it of items) {
+        const p = prods.find(x => x.id === it.pid), qty = Math.floor(num(it.qty));
+        if (!p || pst(p) !== 'active' || brands.find(b => b.id === p.brandId)?.status !== 'active') bad('One of the items is no longer available.');
+        if (qty < 1) bad('Invalid quantity.'); if (qty > p.stock) bad('Only ' + p.stock + ' of ' + p.name + ' left in stock.');
+        (by[p.brandId] = by[p.brandId] || []).push({ p, qty });
+      }
+      const discs = await db.col('discounts'); const code = str(body.code, 20).toUpperCase();
+      const dsc = code ? discs.find(x => x.code === code && x.active && by[x.brandId]) : null;
+      const orders = await db.col('orders'), made = []; let total = 0;
+      for (const [bid, xs] of Object.entries(by)) {
+        const gross = xs.reduce((s, x) => s + x.p.price * x.qty, 0);
+        const disc = dsc && dsc.brandId === bid ? Math.round(gross * dsc.percent) / 100 : 0;
+        const net = gross - disc, r = settings.commission ?? 0.1, com = Math.round(net * r * 100) / 100;
+        let id; do { id = 'VTX-' + crypto.randomBytes(3).toString('hex').toUpperCase(); } while (orders.some(o => o.id === id));
+        orders.push({ id, buyerId: u.id, brandId: bid, items: xs.map(x => ({ pid: x.p.id, name: x.p.name, price: x.p.price, qty: x.qty })), gross, discount: disc, code: disc ? dsc.code : '', subtotal: net, rate: r, commission: com, payout: net - com, ship, ref, payRef, status: 'verifying', payoutDone: false, created: now });
+        xs.forEach(x => { x.p.stock -= x.qty; }); total += net; made.push(id);
+      }
+      if (dsc && Object.values(by).length) { dsc.uses = (dsc.uses || 0) + 1; db.mark('discounts'); }
+      const users = await db.col('users'), me = users.find(x => x.id === u.id); if (me && !me.phone) { me.phone = ship.phone; db.mark('users'); }
+      db.mark('orders'); db.mark('products'); return { orders: made, total, reference: payRef };
+    }
+    case 'order.act': {
+      need(u); const orders = await db.col('orders'), o = orders.find(x => x.id === body.id); if (!o) bad('Order not found.', 404);
+      const brand = (await db.col('brands')).find(b => b.id === o.brandId); const admin = u.role === 'admin', seller = brand?.ownerId === u.id, buyer = o.buyerId === u.id;
+      const v = body.v;
+      if (v === 'confirm' && admin && o.status === 'verifying') { o.status = 'paid'; const m = await db.get('meta', {}); m.bump = m.bump || {}; m.bump[o.brandId] = (m.bump[o.brandId] || 0) + Math.min(8, 2 + o.subtotal / 20000); db.mark('meta'); }
+      else if (v === 'ship' && (admin || seller) && o.status === 'paid') o.status = 'shipped';
+      else if (v === 'deliver' && (admin || buyer) && o.status === 'shipped') o.status = 'delivered';
+      else if (v === 'payout' && admin && counted(o)) o.payoutDone = true;
+      else if (v === 'cancel' && admin && ['verifying', 'paid'].includes(o.status)) {
+        o.status = 'cancelled'; const prods = await db.col('products');
+        o.items.forEach(i => { const p = prods.find(x => x.id === i.pid); if (p) p.stock += i.qty; }); db.mark('products');
+      } else bad('That action is not allowed right now.', 403);
+      if (o.status === 'delivered' && brand) await ensureCredits(db, brand.ownerId);
+      db.mark('orders'); return { ok: 1 };
+    }
+    case 'conn.add': {
+      need(u); const platform = PLATFORMS.includes(body.platform) ? body.platform : 'Other store';
+      (await db.col('connections')).push({ id: rid('c_'), userId: u.id, platform, url: str(body.url, 200), status: body.status === 'imported' ? 'imported' : 'requested', count: Math.max(0, Math.floor(num(body.count))), created: now });
+      db.mark('connections'); return { ok: 1 };
+    }
+    case 'conn.del': {
+      need(u); const c = await db.col('connections');
+      db.d.connections = c.filter(x => !(x.id === body.id && (u.role === 'admin' || x.userId === u.id))); db.mark('connections'); return { ok: 1 };
+    }
+    case 'disc.save': {
+      need(u); const b = await myBrandOf(db, u); if (!b) bad('Create your store first.');
+      const code = str(body.code, 20).toUpperCase(); if (!/^[A-Z0-9]{3,20}$/.test(code)) bad('Use 3 to 20 letters or numbers.');
+      const percent = Math.min(90, Math.max(1, Math.round(num(body.percent)))); const ds = await db.col('discounts');
+      if (ds.some(x => x.code === code && x.brandId === b.id)) bad('You already have that code.');
+      ds.push({ id: rid('d_'), brandId: b.id, code, percent, active: true, uses: 0, created: now }); db.mark('discounts'); return { ok: 1 };
+    }
+    case 'disc.toggle': case 'disc.del': {
+      need(u); const b = await myBrandOf(db, u); const ds = await db.col('discounts'), d = ds.find(x => x.id === body.id);
+      if (!d || (u.role !== 'admin' && d.brandId !== b?.id)) bad('Discount not found.', 404);
+      if (a === 'disc.toggle') d.active = !d.active; else db.d.discounts = ds.filter(x => x.id !== d.id);
+      db.mark('discounts'); return { ok: 1 };
+    }
+    case 'ai': {
+      need(u); const key = process.env.ANTHROPIC_API_KEY; if (!key) bad('The online assistant is not set up.', 503);
+      const clean = (Array.isArray(body.messages) ? body.messages : []).slice(-10)
+        .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string').map(m => ({ role: m.role, content: m.content.slice(0, 600) }));
+      while (clean.length && clean[0].role !== 'user') clean.shift();
+      if (!clean.length) bad('No message.');
+      const c = body.context || {}; const ctx = { page: str(c.page, 30), role: u.role, storeStatus: str(c.storeStatus, 20), fee: (await db.get('settings', {})).fee, commissionPercent: Math.round(((await db.get('settings', {})).commission ?? 0.1) * 100), productCount: num(c.productCount) };
+      let r; try {
+        r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+          body: JSON.stringify({ model: process.env.VTX_AI_MODEL || 'claude-sonnet-5-5', max_tokens: 450, system: AI_SYSTEM + '\n\nCurrent user context (JSON): ' + JSON.stringify(ctx), messages: clean }) });
+      } catch (e) { bad('The assistant could not be reached.', 502); }
+      if (!r.ok) bad('The assistant is busy. Try again.', 502);
+      const j = await r.json();
+      return { reply: (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim() };
+    }
+    case 'fee.init': {
+      need(u); if (!payConfigured()) bad('Online payment is not set up yet. Please try again later.', 503);
+      const b = await myBrandOf(db, u); if (!b || !['unpaid', 'rejected'].includes(b.status)) bad('Nothing to pay for right now.');
+      const s = await db.get('settings', {}), pays = await db.col('payments');
+      if (!(s.fee > 0)) { b.status = 'publishing'; b.publishAt = now + 3000; db.mark('brands'); return { free: true }; }
+      let p = pays.find(x => x.brandId === b.id && x.status === 'awaiting' && x.amount === s.fee);
+      if (!p) { p = { id: rid('pay_'), brandId: b.id, userId: u.id, amount: s.fee, ref: '', reference: 'VTXF-' + crypto.randomBytes(8).toString('hex').toUpperCase(), proof: '', status: 'awaiting', method: 'Paystack', created: now }; pays.push(p); db.mark('payments'); }
+      return { reference: p.reference, amount: p.amount, email: u.email };
+    }
+    case 'order.verify': case 'fee.verify': {
+      need(u); const ref = str(body.reference, 60);
+      if (!/^VTX[OF]-[A-Z0-9]{16}$/.test(ref)) bad('Bad payment reference.');
+      return await fulfill(db, ref, u);
+    }
+    case 'wallet.state': {
+      need(u); await ensureCredits(db, u.id); await db.flush();
+      const brandIds = (await db.col('brands')).filter(b => b.ownerId === u.id).map(b => b.id);
+      const led = await db.col('ledger'), orders = await db.col('orders'), settings = await db.get('settings', {});
+      const entries = led.filter(l => l.userId === u.id).sort((a, b) => b.created - a.created).slice(0, 100);
+      return { summary: walletSummary(led, orders, brandIds, u.id), entries, minWithdraw: settings.minWithdraw ?? 1000, saved: u.payout || {}, hasStore: brandIds.length > 0 };
+    }
+    case 'wallet.withdraw': {
+      need(u); await ensureCredits(db, u.id);
+      const brandIds = (await db.col('brands')).filter(b => b.ownerId === u.id).map(b => b.id);
+      const led = await db.col('ledger'), orders = await db.col('orders'), settings = await db.get('settings', {});
+      const sum = walletSummary(led, orders, brandIds, u.id), amount = r2(num(body.amount)), min = settings.minWithdraw ?? 1000;
+      if (!(amount > 0)) bad('Enter an amount.');
+      if (amount < min) bad('The minimum withdrawal is ' + min + '.');
+      if (amount > sum.available) bad('That is more than your available balance.');
+      let dest;
+      if (body.method === 'bank') {
+        const b = body.bank || {}; dest = { bankName: str(b.bankName, 60), accountName: str(b.accountName, 80), accountNumber: str(b.accountNumber, 24).replace(/\s/g, '') };
+        if (!dest.bankName || !dest.accountName || !/^[A-Za-z0-9-]{6,24}$/.test(dest.accountNumber)) bad('Enter your bank name, account name and a valid account number.');
+      } else if (body.method === 'crypto') {
+        const w = body.wallet || {}; dest = { network: NETWORKS.includes(w.network) ? w.network : NETWORKS[0], address: str(w.address, 80) };
+        const evm = /^0x[a-fA-F0-9]{40}$/.test(dest.address), tron = /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(dest.address);
+        if (dest.network.startsWith('TRON') ? !tron : !evm) bad('That wallet address does not match the network you chose.');
+      } else bad('Choose bank or crypto wallet.');
+      let rate = settings.usdRate > 0 ? settings.usdRate : num(body.rate); if (!(rate >= 100 && rate <= 20000)) rate = 1500;
+      led.push({ id: rid('w_'), userId: u.id, type: 'withdrawal', method: body.method, dest, amount, usdt: body.method === 'crypto' ? r2(amount / rate) : 0, rate, status: 'pending', created: now });
+      const users = await db.col('users'), me = users.find(x => x.id === u.id); me.payout = { bank: body.method === 'bank' ? dest : (me.payout || {}).bank, wallet: body.method === 'crypto' ? dest : (me.payout || {}).wallet };
+      db.mark('ledger'); db.mark('users'); return { ok: 1 };
+    }
+    case 'wallet.admin': {
+      needAdmin(u); const led = await db.col('ledger'), users = await db.col('users');
+      const list = led.filter(l => l.type === 'withdrawal').sort((a, b) => (a.status === 'pending' ? 0 : 1) - (b.status === 'pending' ? 0 : 1) || b.created - a.created).slice(0, 200)
+        .map(l => { const x = users.find(y => y.id === l.userId); return { ...l, userName: x?.name || '', userEmail: x?.email || '', userPhone: x?.phone || '' }; });
+      return { withdrawals: list };
+    }
+    case 'wallet.act': {
+      needAdmin(u); const led = await db.col('ledger'), l = led.find(x => x.id === body.id && x.type === 'withdrawal'); if (!l) bad('Withdrawal not found.', 404);
+      if (l.status !== 'pending') bad('That withdrawal is already ' + l.status + '.');
+      if (body.v === 'paid') { l.status = 'paid'; l.txref = str(body.txref, 120); l.paidAt = now; }
+      else if (body.v === 'reject') { l.status = 'rejected'; l.rejectedAt = now; l.note = str(body.note, 120); }
+      else bad('Unknown action.');
+      db.mark('ledger'); return { ok: 1 };
+    }
+    case 'pos.state': {
+      need(u); const meta = await db.get('meta', {});
+      if (meta.nextAt && now >= meta.nextAt) { await sweep(db, now); await db.flush(); }
+      const b = await myBrandOf(db, u);
+      const settings = await db.get('settings', {});
+      const base = { me: { id: u.id, name: u.name, email: u.email, role: u.role }, settings: { account: settings.account, usdRate: settings.usdRate || 0 } };
+      if (!b) return { ...base, noStore: true };
+      if (b.status !== 'active') return { ...base, brand: { id: b.id, name: b.name, status: b.status } };
+      const prods = (await db.col('products')).filter(p => p.brandId === b.id);
+      const sales = (await db.col('possales')).filter(s => s.brandId === b.id).slice(-400);
+      const orders = (await db.col('orders')).filter(o => o.brandId === b.id).slice(-400).map(o => ['verifying', 'cancelled'].includes(o.status) ? { ...o, ref: '', ship: { name: o.ship.name, phone: '', address: '', city: '', state: '', landmark: '' } } : { ...o, ref: '' });
+      return { ...base, brand: b, products: prods, sales, orders };
+    }
+    case 'pos.sale': {
+      need(u); const b = await myBrandOf(db, u);
+      if (!b || b.status !== 'active') bad('Your store must be Active to use the POS.');
+      const prods = await db.col('products'), sales = await db.col('possales');
+      const cid = str(body.cid, 40); if (!/^[A-Za-z0-9_-]{6,40}$/.test(cid)) bad('Bad sale id.');
+      const dup = sales.find(s => s.id === cid); if (dup) return { sale: dup, dup: true };
+      const items = (Array.isArray(body.items) ? body.items : []).slice(0, 100).map(i => {
+        const p = prods.find(x => x.id === i.pid && x.brandId === b.id); if (!p) bad('An item in this sale no longer exists.');
+        const qty = Math.floor(num(i.qty)); if (qty < 1) bad('Invalid quantity.');
+        return { pid: p.id, name: p.name, price: Math.max(0, r2(num(i.price))), cost: p.cost || 0, qty };
+      });
+      if (!items.length) bad('The sale is empty.');
+      const sub = r2(items.reduce((a, i) => a + i.price * i.qty, 0));
+      const d = body.disc || {}; const dv = Math.max(0, num(d.value));
+      const disc = r2(d.type === 'amt' ? Math.min(sub, dv) : sub * Math.min(100, dv) / 100);
+      const net = r2(sub - disc), vat = r2(net * (b.posVat || 0) / 100), total = r2(net + vat);
+      const tenders = (Array.isArray(body.tenders) ? body.tenders : []).slice(0, 6).map(t => ({ method: ['Cash', 'Transfer', 'Card'].includes(t.method) ? t.method : 'Cash', amount: Math.max(0, r2(num(t.amount))), ref: str(t.ref, 80) })).filter(t => t.amount > 0);
+      const paid = r2(tenders.reduce((a, t) => a + t.amount, 0));
+      if (paid < total - 0.01) bad('Payment is less than the total.');
+      let no = str(body.no, 20); if (!/^POS-[A-Z0-9]{4,14}$/.test(no) || sales.some(s => s.no === no)) no = 'POS-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+      let t = num(body.time) || now; if (t > now || t < now - 7 * 864e5) t = now;
+      const cu = body.cust || {};
+      const sale = { id: cid, no, brandId: b.id, cashierId: u.id, cashier: u.name, time: t, items, sub, disc, vat, total, tenders, tendered: Math.max(0, r2(num(body.tendered))) || paid, change: Math.max(0, r2(num(body.change))), cust: { name: str(cu.name, 60), phone: str(cu.phone, 30) }, note: str(body.note, 120), status: 'paid' };
+      items.forEach(i => { const p = prods.find(x => x.id === i.pid); p.stock = Math.max(0, p.stock - i.qty); });
+      sales.push(sale);
+      const m = await db.get('meta', {}); m.bump = m.bump || {}; m.bump[b.id] = (m.bump[b.id] || 0) + Math.min(6, 1 + total / 20000);
+      db.mark('possales'); db.mark('products'); db.mark('meta');
+      return { sale };
+    }
+    case 'pos.refund': {
+      need(u); const sales = await db.col('possales'), s = sales.find(x => x.id === body.id); if (!s) bad('Sale not found.', 404);
+      const b = (await db.col('brands')).find(x => x.id === s.brandId);
+      if (u.role !== 'admin' && b?.ownerId !== u.id) bad('Not your sale.', 403);
+      if (s.status === 'refunded') return { sale: s };
+      s.status = 'refunded'; s.refundedBy = u.name; s.refundedAt = now;
+      const prods = await db.col('products'); s.items.forEach(i => { const p = prods.find(x => x.id === i.pid); if (p) p.stock += i.qty; });
+      db.mark('possales'); db.mark('products'); return { sale: s };
+    }
+    case 'pos.settings': {
+      need(u); const b = await myBrandOf(db, u); if (!b) bad('Create your store first.');
+      b.posVat = Math.min(100, Math.max(0, num(body.vat))); b.posFooter = str(body.footer, 120); b.posAddress = str(body.address, 160); b.posPhone = str(body.phone, 30);
+      const a = body.account || {}; b.posAccount = { name: str(a.name, 80), bank: str(a.bank, 40), number: str(a.number, 20) };
+      db.mark('brands'); return { ok: 1 };
+    }
+    case 'migrate': {
+      needAdmin(u); const c = body.c, recs = (Array.isArray(body.recs) ? body.recs : []).slice(0, 40);
+      const clean = o => { const r = { ...o }; for (const k of ['logo', 'banner', 'proof']) if (r[k] && !okImg(r[k])) r[k] = ''; if (Array.isArray(r.images)) r.images = r.images.filter(okImg); return r; };
+      if (c === 'settings') {
+        const s = await db.get('settings', {}), r = recs[0] || {};
+        if (r.account) s.account = { name: str(r.account.name, 80), bank: str(r.account.bank, 40), number: str(r.account.number, 20) };
+        if (r.fee >= 0) s.fee = num(r.fee); if (r.commission >= 0 && r.commission <= 1) s.commission = num(r.commission);
+        db.mark('settings'); return { ok: 1 };
+      }
+      if (!['brands', 'products', 'users', 'orders', 'payments', 'discounts', 'connections'].includes(c)) bad('Unknown collection.');
+      const list = await db.col(c);
+      for (const raw of recs) {
+        if (!raw || typeof raw.id !== 'string') continue; let r = clean(raw);
+        if (c === 'users') {
+          if (r.id === 'u_admin') { const a0 = list.find(x => x.id === 'u_admin'); if (a0 && /^[a-f0-9]{64}$/.test(raw.pass || '')) { a0.pass = raw.pass; delete a0.pw; delete a0.salt; a0.name = str(raw.name, 60) || a0.name; a0.phone = str(raw.phone, 30); } continue; }
+          if (list.some(x => x.email === String(r.email).toLowerCase() && x.id !== r.id)) continue;
+          r = { id: r.id, name: str(r.name, 60), email: String(r.email).toLowerCase(), phone: str(r.phone, 30), role: 'user', created: r.created || now, pass: r.pass };
+        }
+        const i = list.findIndex(x => x.id === r.id); if (i >= 0) list[i] = { ...list[i], ...r }; else list.push(r);
+      }
+      db.mark(c); return { ok: 1 };
+    }
+    default: bad('Unknown request.', 404);
+  }
+}
+
+const handler = async (req) => {
+  try {
+    const st = await getStores();
+    const url = new URL(req.url);
+    if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
+    if (req.method === 'GET') {
+      if (url.searchParams.get('feed') === 'products') {
+        const fdb = new DB(st.main); await init(fdb);
+        const brands = await fdb.col('brands'), prods = await fdb.col('products');
+        const act = new Map(brands.filter(b => b.status === 'active').map(b => [b.id, b])), only = url.searchParams.get('brand'), origin = url.origin;
+        const abs = x => (x && x.startsWith('/') ? origin + x : x);
+        const list = prods.filter(p => pst(p) === 'active' && act.has(p.brandId) && (!only || p.brandId === only)).map(p => ({
+          id: p.id, name: p.name, price: p.price, currency: 'NGN', stock: p.stock, category: p.category, description: p.description,
+          image: abs((p.images || [])[0] || ''), images: (p.images || []).map(abs), brand: act.get(p.brandId).name, brandId: p.brandId, url: origin + '/#/product/' + p.id
+        }));
+        return new Response(JSON.stringify({ store: 'VTX Online', url: origin, updated: Date.now(), products: list }), { headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=30', ...CORS } });
+      }
+      const id = url.searchParams.get('img');
+      if (!id) return json({ ok: true, app: 'VTXOnline', storage: true, onlinePayments: payConfigured() });
+      if (!/^[a-f0-9]{24}$/.test(id)) return new Response('Not found', { status: 404 });
+      const d = await st.img.get(id, { type: 'text' });
+      const m = d && d.match(/^data:(image\/[a-z]+);base64,(.+)$/);
+      if (!m) return new Response('Not found', { status: 404 });
+      return new Response(Buffer.from(m[2], 'base64'), { headers: { 'content-type': m[1], 'cache-control': 'public, max-age=31536000, immutable', ...CORS } });
+    }
+    if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
+    const sig = req.headers.get('x-paystack-signature');
+    if (sig) {
+      const raw = await req.text(), key = process.env.PAYSTACK_SECRET_KEY || '';
+      const good = key ? crypto.createHmac('sha512', key).update(raw).digest('hex') : '';
+      if (!good || good.length !== sig.length || !crypto.timingSafeEqual(Buffer.from(good), Buffer.from(sig))) return new Response('invalid signature', { status: 401 });
+      let ev = {}; try { ev = JSON.parse(raw); } catch (e) { /* ignore */ }
+      if (ev.event === 'charge.success' && ev.data && typeof ev.data.reference === 'string') {
+        const wdb = new DB(st.main); await init(wdb);
+        try { await fulfill(wdb, ev.data.reference, null); await wdb.flush(); } catch (e) { console.error('webhook', e); }
+      }
+      return new Response('ok', { status: 200 });
+    }
+    const body = await req.json().catch(() => ({}));
+    const db = new DB(st.main);
+    await init(db);
+    const user = await authUser(req, db);
+    const out = await act(body, db, user, st);
+    await db.flush();
+    return json(out);
+  } catch (e) {
+    if (e instanceof HttpError) return json({ error: e.message }, e.status);
+    console.error(e);
+    return json({ error: 'Server error' }, 500);
+  }
+};
+
+
+
+ /* ---- fetch interception ---- */
+ const realFetch=window.fetch.bind(window);
+ window.fetch=function(input,init){
+  const u=typeof input==='string'?input:(input&&input.url)||'';
+  if(/^https:\/\/api\.paystack\.co\//.test(u)){const ref=decodeURIComponent(u.split('/verify/')[1]||'');return Promise.resolve(new Response(JSON.stringify({status:true,data:{status:'success',amount:1e13,currency:'NGN',id:1,reference:ref}}),{status:200}))}
+  if(/^https:\/\/api\.anthropic\.com\//.test(u))return Promise.resolve(new Response('{}',{status:500}));
+  const m=u.match(/(\/api(?:\?.*)?)$/);
+  if(m&&(u.charAt(0)==='/'||u.indexOf(location.origin)===0)){
+   const req=new Request('https://demo.local'+m[1],{method:(init&&init.method)||'GET',headers:init&&init.headers,body:init&&init.body});
+   return handler(req)}
+  return realFetch(input,init)};
+ /* photos uploaded in preview live in browser storage: show them */
+ function fixImg(img){const s=img.getAttribute('src')||'';const i=s.indexOf('/api?img=');if(i<0)return;const d=rawGet('vtx-img',s.slice(i+9));if(d&&img.src!==d)img.src=d}
+ const scan=root=>{if(root.nodeType!==1)return;if(root.tagName==='IMG')fixImg(root);root.querySelectorAll&&root.querySelectorAll('img[src*="/api?img="]').forEach(fixImg)};
+ new MutationObserver(ms=>{ms.forEach(m=>{if(m.type==='attributes')fixImg(m.target);else m.addedNodes.forEach(scan)})}).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['src']});
+ /* preview badge */
+ const bar=document.createElement('div');
+ bar.style.cssText='position:fixed;left:10px;bottom:10px;z-index:99999;font:600 12px/1.2 system-ui,sans-serif;background:#8e0b21;color:#fff;border-radius:20px;padding:8px 12px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)';
+ bar.textContent='PREVIEW MODE';bar.setAttribute('role','button');bar.tabIndex=0;
+ const info=()=>{if(document.getElementById('demoinfo'))return;const o=document.createElement('div');o.id='demoinfo';o.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px';o.innerHTML='<div style="background:#fff;color:#222;border-radius:16px;max-width:420px;padding:18px;font:14px/1.5 system-ui,sans-serif"><b style="font-size:16px">Preview mode</b><p style="margin:8px 0">The real server is not connected, so this page is running a copy of it inside your browser. Everything you add here stays on this device and is not shared with anyone. Payments are simulated.</p><p style="margin:8px 0">Upload the files to Netlify to go live.</p><div style="display:flex;gap:8px;margin-top:12px"><button id="demoreset" style="flex:1;padding:10px;border-radius:10px;border:1px solid #c00;background:#fff;color:#c00;font-weight:600">Reset preview data</button><button id="democlose" style="flex:1;padding:10px;border-radius:10px;border:0;background:#111;color:#fff;font-weight:600">Close</button></div></div>';document.body.appendChild(o);o.querySelector('#democlose').onclick=()=>o.remove();o.querySelector('#demoreset').onclick=()=>{try{Object.keys(localStorage).filter(k=>k.indexOf('vtxdemo:')===0||k==='vtx_token'||k==='vtxpos_token').forEach(k=>localStorage.removeItem(k))}catch(e){}location.reload()}};
+ bar.onclick=info;(document.body?Promise.resolve():new Promise(r=>document.addEventListener('DOMContentLoaded',r))).then(()=>document.body.appendChild(bar));
+}
+
+</script>
 <script>
 const LOGO='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAFoAWgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD7IoooqCgooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKK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DKQcDryBXT3EnlQSSgbtiFseuBWP4L8LaJ4P0RdH0CzNta+Y8zlpGkklkc5aR3YlnYnqSSa17pDJazRqMlkYD6kUAeSeGfi9rd3ovhbxJr3g2DT/AA/4luYLW2u7bVPPkgkmJWLzIjGvylhglScZ6V6/XjvwV+DunaJ4Q8KXHim11GfXtJhSQWtzqstxbWtwMgNHFvMQIB4IHGeK9ipsEcp8VfGD+CfCbara6XJq+oz3EVpp+nxybGup5GwEDYOOAzE46Ka1/COu2XibwvpniHTm3Wmo2sdxHzyAwztPuDkH3FcN8QvCfivxZ8TNBuLPUpNC0bQLWW7gvY44Z2mvpf3YXy5MgBIt53EdX4q18E/DXiHwbaa94a1aT7XpkGpvc6Re/u182GceZIhjT7myUycYAwRijoB6H3rxmH4yeIV8NS+Mr3wNAnhS31KSyuLuHVg9zEqXJtzL5JjAI3DOA2cV7NXzfpvwd12y8K6ZrD6ZdX+sWHie41C70G41QtZ31q13Iy4jL+UsiqySqePmX5uTQgZ9IA55rjvin4w1DwjaaINK0aLVr7WNVj02CGW7+zorOjsGL7W4+T0712I5APSvMv2hPC2peKtG8ORWHh8eIItP16G9vbD7SkBlgWORWAZyBnLL3pLcDsPCF/4nvredvE2g2OkSq4EK2uo/axIuOSTsTbg9ua3a4z4T6f8A2XpV3ZR+BJPB8HnCRYGvorkTMRgsCjtjGAOcV2dDA5j4beLD4w0a+1E2P2L7Lqt5p+zzN+7yJmj35wMZ25x2rp68h+GCeOvCLahod18P7u5tLrxDe3a6hDqlqEWGe4Zw5Qvv4VskYzXr1NgFGD6UVkT+GtHnleWSC4LuxZiLyYDJ9g2BSA18H0pcH0rD/wCEV0P/AJ4XP/gdP/8AF0n/AAimh/8APvdf+B0//wAXT0A3ce1GD6Vh/wDCKaJ/zwuv/A6f/wCLpf8AhFdE/wCeF1/4HT//ABdGgG3g+lGD6Vh/8Iron/PC5/8AA2f/AOLpP+EU0P8A54XX/gdP/wDF0aAboFBFYY8K6KP+WF1/4HT/APxdXdM0mx013e0SZS4AbfcSSf8AoTHFLQC9RRRQAUUUUDCiiigAooooAKUUlFACkUlFAoAKKKKACiiigAooooAKKKKACiiigAooooAKKO1FABRQKKACiiigQUUv40lAwooooAMUUtJQAH2ooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD/2Q==';
 document.querySelector('link[rel=icon]').href=LOGO;
@@ -337,8 +1084,8 @@ addEventListener('hashchange',()=>{closeModal();render();scrollTo(0,0)});
 function pendingCount(){if(!isAdmin())return 0;return S.orders.filter(o=>o.status==='verifying'&&!o.payRef).length+S.payments.filter(p=>p.status==='pending').length+(S.wd||0)}
 function shell(content,active){
  const u=me(),cc=S.cart.reduce((a,c)=>a+c.qty,0),pc=pendingCount();
- const items=[['home','Home','home'],['orders','Orders','box'],['wallet','Balance','wallet'],['products','Products','bag'],['customers','Customers','users'],['chart','Analytics','trend'],['marketing','Marketing','mega'],['discounts','Discounts','tag'],['market','Market','store','Sales channels'],['store','Create store','plus'],['connect','Connect store','link','Apps'],['ai','VTX AI','spark'],['menu','Menu','menu']];
- const side=items.map(([k,l,i,sep])=>(sep?`<div class="nav-sep">${sep}</div>`:'')+(k==='ai'?`<button class="nav" data-a="ai">${ic(i)}${l}</button>`:`<a class="nav ${active===k?'on':''}" href="#/${k}">${ic(i)}${l}${k==='orders'&&pc?`<span class="cnt">${pc}</span>`:''}</a>`)).join('')
+ const items=[['home','Home','home'],['orders','Orders','box'],['wallet','Balance','wallet'],['products','Products','bag'],['customers','Customers','users'],['chart','Analytics','trend'],['marketing','Marketing','mega'],['discounts','Discounts','tag'],['market','Market','store','Sales channels'],['store','Create store','plus'],['connect','Connect store','link','Apps'],['pos','VTX POS','cart'],['ai','VTX AI','spark'],['menu','Menu','menu']];
+ const side=items.map(([k,l,i,sep])=>(sep?`<div class="nav-sep">${sep}</div>`:'')+(k==='ai'?`<button class="nav" data-a="ai">${ic(i)}${l}</button>`:`<a class="nav ${active===k?'on':''}" href="${k==='pos'?'/pos/':'#/'+k}">${ic(i)}${l}${k==='orders'&&pc?`<span class="cnt">${pc}</span>`:''}</a>`)).join('')
   +(isAdmin()?`<a class="nav ${active==='admin'?'on':''}" href="#/admin">${ic('shield')}Admin${pc?`<span class="cnt">${pc}</span>`:''}</a>`:'')
   +`<div class="nav-sep">Preferences</div><a class="nav ${active==='settings'?'on':''}" href="#/settings">${ic('set')}Settings</a>`;
  const bot=[['home','Home','home'],['market','Market','bag'],['orders','Orders','box'],['menu','Menu','menu'],['settings','Settings','set']].map(([k,l,i])=>`<a class="${active===k?'on':''}" href="#/${k}">${ic(i)}${l}${k==='orders'&&pc?`<span class="cnt">${pc}</span>`:''}</a>`).join('');
@@ -486,11 +1233,11 @@ function paintChart(){
  c.onpointerleave=()=>{$('#tip').style.display='none'};
 }
 function viewMenu(){
- const u=me();const L=[['store','plus','Create store','Set up your brand, pay and publish'],['wallet','wallet','Balance','Earnings and withdrawals'],['products','bag','Products','Your products and their status'],['orders','box','Orders','Track purchases and brand orders'],['customers','users','Customers','People who bought from you'],['discounts','tag','Discounts','Create promo codes'],['marketing','mega','Marketing','Share your store link'],['cart','cart','Cart','Review what you plan to buy'],['chart','trend','Analytics','Live brand chart'],['connect','link','Connect store','Shopify, Printify and more']];
+ const u=me();const L=[['store','plus','Create store','Set up your brand, pay and publish'],['wallet','wallet','Balance','Earnings and withdrawals'],['pos','cart','VTX POS','Sell in person and design products'],['products','bag','Products','Your products and their status'],['orders','box','Orders','Track purchases and brand orders'],['customers','users','Customers','People who bought from you'],['discounts','tag','Discounts','Create promo codes'],['marketing','mega','Marketing','Share your store link'],['cart','cart','Cart','Review what you plan to buy'],['chart','trend','Analytics','Live brand chart'],['connect','link','Connect store','Shopify, Printify and more']];
  if(isAdmin())L.unshift(['admin','shield','Admin','Payments, brands and revenue']);
  return`<div class="page-h"><h1>Menu</h1></div>
  <div class="card"><div class="row">${u?`<span class="avatar" style="width:52px;height:52px;font-size:16px">${u.role==='admin'?`<img src="${LOGO}" alt="">`:esc(initials(u.name))}</span><div class="grow"><div class="b" style="font-size:16px">${esc(u.name)}</div><div class="mut">${esc(u.email)}</div>${u.role==='admin'?badge('Admin','ok'):''}</div>`:`<img src="${LOGO}" alt="" style="width:52px;height:52px;border-radius:12px"><div class="grow"><div class="b">Welcome to VTXOnline</div><div class="mut">Sign in to order or sell.</div></div><a class="btn p" href="#/auth" data-a="tosign">Sign in</a>`}</div></div>
- <div class="card flush">${L.map(([h,i,t,s])=>`<a class="item" href="#/${h}">${ic(i)}<div class="grow"><div class="b">${t}</div><div class="mut sm">${s}</div></div></a>`).join('')}<a class="item" href="#/settings">${ic('set')}<div class="grow"><div class="b">Settings</div><div class="mut sm">Profile and password</div></div></a></div>
+ <div class="card flush">${L.map(([h,i,t,s])=>`<a class="item" href="${h==='pos'?'/pos/':'#/'+h}">${ic(i)}<div class="grow"><div class="b">${t}</div><div class="mut sm">${s}</div></div></a>`).join('')}<a class="item" href="#/settings">${ic('set')}<div class="grow"><div class="b">Settings</div><div class="mut sm">Profile and password</div></div></a></div>
  ${u?`<button class="btn lg full" data-a="logout">${ic('out')}Sign out</button>`:''}`;
 }
 function viewSettings(){
@@ -506,10 +1253,10 @@ function viewSettings(){
 }
 function viewConnect(){
  const u=me(),mine=S.connections.filter(c=>c.userId===u.id);
- const P=[['Shopify','Import your products straight from your Shopify store.',1],['Printify','Print-on-demand products. Sync request is logged for setup.',0],['WooCommerce','WordPress store. Sync request is logged for setup.',0],['Etsy','Handmade and vintage shop. Sync request is logged for setup.',0],['Wix','Wix Stores. Sync request is logged for setup.',0],['Other store','Any store with a website link.',0]];
+ const P=[['Shopify','Import your products straight from your Shopify store.',1],['Printify','Print-on-demand products. Sync request is logged for setup.',0],['WooCommerce','WordPress store. Sync request is logged for setup.',0],['Etsy','Handmade and vintage shop. Sync request is logged for setup.',0],['Wix','Wix Stores. Sync request is logged for setup.',0],['UJU Store','Show your UJU Store products here. Uses its products.json feed.',1],['Other store','Any store that publishes a products.json feed.',1]];
  return`<div class="page-h"><h1>Connect store</h1></div>
  <div class="grid g2" style="margin-bottom:16px">${P.map(([n,d,real])=>`<div class="card" style="margin:0"><div class="row"><span class="avatar" style="width:40px;height:40px;border-radius:10px">${n[0]}</span><div class="grow"><h2 style="margin:0">${n}</h2>${real?badge('Live import','ok'):badge('Request')}</div></div><p class="mut" style="margin:10px 0">${d}</p><button class="btn p" data-a="conn" data-v="${n}">Connect ${n}</button></div>`).join('')}</div>
- <div class="card flush"><div class="row" style="padding:14px 16px"><h2>Your connections</h2></div>${mine.length?mine.map(c=>`<div class="item"><div class="grow"><div class="b">${esc(c.platform)}</div><div class="mut sm">${esc(c.url)} · ${fdate(c.created)}</div></div>${badge(c.status==='imported'?`${c.count} imported`:'Requested',c.status==='imported'?'ok':'wa')}<button class="tbtn" style="color:#616161" data-a="cdel" data-id="${c.id}" aria-label="Remove">${ic('trash')}</button></div>`).join(''):'<div class="empty">No stores connected yet.</div>'}</div>`;
+ <div class="card flush"><div class="row" style="padding:14px 16px"><h2>Your connections</h2></div>${mine.length?mine.map(c=>`<div class="item"><div class="grow"><div class="b">${esc(c.platform)}</div><div class="mut sm">${esc(c.url)} · ${fdate(c.created)}</div></div>${badge(c.status==='imported'?`${c.count} imported`:'Requested',c.status==='imported'?'ok':'wa')}${c.status==='imported'?`<button class="btn sm" data-a="csync" data-id="${c.id}">Sync now</button>`:''}<button class="tbtn" style="color:#616161" data-a="cdel" data-id="${c.id}" aria-label="Remove">${ic('trash')}</button></div>`).join(''):'<div class="empty">No stores connected yet.</div>'}</div>`;
 }
 function viewSell(){
  const u=me(),b=myBrand();
@@ -682,9 +1429,7 @@ function aiContext(){const b=myBrand();return{page:route().name,signedIn:!!me(),
 async function askAI(text){
  if(AIbusy)return;AIM.push({r:'u',t:text});AIbusy=true;drawAI();
  try{let msgs=AIM.slice(-10).map(m=>({role:m.r==='u'?'user':'assistant',content:m.t}));while(msgs.length&&msgs[0].role!=='user')msgs.shift();
-  const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),20000);
-  const res=await fetch('/.netlify/functions/vtx-ai',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:msgs,context:aiContext()}),signal:ctl.signal});clearTimeout(to);
-  if(!res.ok)throw 0;const j=await res.json();if(!j.reply)throw 0;AIM.push({r:'a',t:j.reply});AIon=true}
+  const j=await api('ai',{messages:msgs,context:aiContext()});if(!j.reply)throw 0;AIM.push({r:'a',t:j.reply});AIon=true}
  catch(e){AIM.push({r:'a',t:localAI(text)});AIon=false}
  AIM=AIM.slice(-30);store.set('ai',AIM);AIbusy=false;drawAI()}
 function aiFmt(t){const btns=[];let x=esc(t).replace(/\[\[go:([^|\]]+)\|([^\]]+)\]\]/g,(m,h,l)=>{if(/^#\/[a-z0-9\/_-]*$/i.test(h))btns.push([h,l]);return''});
@@ -701,8 +1446,29 @@ function drawAI(){
  const m=$('#aim');if(m)m.scrollTop=m.scrollHeight;if(AIopen&&!AIbusy&&innerWidth>900)$('#aiq')?.focus();
 }
 
+/* ---------- store feeds ---------- */
+const LIVE=['Shopify','UJU Store','Other store'];
+async function pullFeed(platform,url){
+ let base=url.trim();if(!/^https?:\/\//.test(base))base='https://'+base;const b0=base.replace(/\/+$/,'');let list=[];
+ if(platform==='Shopify'){
+  let r;try{r=await fetch(b0+'/products.json?limit=30')}catch(e){throw new Error('Could not reach that store.')}
+  if(!r.ok)throw new Error('Could not read that Shopify store.');const j=await r.json();
+  list=(j.products||[]).slice(0,30).map(sp=>({extId:'shopify-'+sp.id,name:sp.title,price:parseFloat(sp.variants?.[0]?.price)||0,stock:20,category:CATS.includes(sp.product_type)?sp.product_type:'Other',description:(sp.body_html||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,600)||sp.title,images:(sp.images||[]).slice(0,3).map(i=>i.src)}));
+ }else{
+  const tries=/\.json(\?|$)/i.test(b0)?[b0]:[b0+'/products.json',b0+'/api/products.json'];let j=null,used='';
+  for(const t of tries){try{const r=await fetch(t);if(!r.ok)continue;j=await r.json();used=t;break}catch(e){}}
+  if(!j)throw new Error('Could not find a products.json feed at that address.');
+  const arr=Array.isArray(j)?j:(j.products||j.items||j.data||[]);
+  list=arr.slice(0,60).map(p=>{const name=String(p.name||p.title||'').trim();
+   const imgs=[].concat(p.images||p.image||p.img||p.photo||p.picture||[]).map(x=>typeof x==='string'?x:(x&&(x.src||x.url))||'').filter(Boolean).map(x=>{try{return new URL(x,used).href}catch(e){return''}}).filter(x=>/^https:/.test(x)).slice(0,4);
+   const st=p.stock??p.quantity;
+   return{extId:'feed-'+String(p.id??p.sku??name.toLowerCase()),name,price:parseFloat(String(p.price??p.amount??p.cost??p.variants?.[0]?.price??'0').replace(/[^\d.]/g,''))||0,stock:Number.isFinite(+st)&&st!==undefined&&st!==null&&st!==''?+st:20,category:CATS.includes(p.category)?p.category:'Other',description:String(p.description||p.desc||p.body_html||name).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,600)||name,images:imgs}}).filter(p=>p.name&&p.price>0);
+ }
+ if(!list.length)throw new Error('No products were found in that feed.');
+ return list}
 /* ---------- Paystack ---------- */
-function loadPaystack(){return new Promise((res,rej)=>{if(window.PaystackPop)return res();const sc=document.createElement('script');sc.src='https://js.paystack.co/v1/inline.js';sc.onload=()=>res();sc.onerror=()=>rej(new Error('Could not load the payment window. Check your connection and try again.'));document.head.appendChild(sc)})}
+function demoPaystack(){if(window.PaystackPop&&window.PaystackPop.demo)return;window.PaystackPop={demo:1,setup:function(o){return{openIframe:function(){window.__demoPay=o;setTimeout(function(){openModal('Demo payment','<p>This is a <b>simulated</b> payment window for preview mode. No money moves.</p><p class="b" style="font-size:22px;margin:10px 0">'+money(o.amount/100)+'</p>','<button class="btn" data-a="demopayno">Cancel</button><button class="btn p" data-a="demopayok">Simulate successful payment</button>')},200)}}}}}
+function loadPaystack(){if(window.__DEMO){demoPaystack();return Promise.resolve()}return new Promise((res,rej)=>{if(window.PaystackPop)return res();const sc=document.createElement('script');sc.src='https://js.paystack.co/v1/inline.js';sc.onload=()=>res();sc.onerror=()=>rej(new Error('Could not load the payment window. Check your connection and try again.'));document.head.appendChild(sc)})}
 async function payNow(o,kind){
  await loadPaystack();
  await new Promise(resolve=>{let done=false;
@@ -764,7 +1530,7 @@ async function api(a,body={}){
  let r;try{r=await fetch('/api',{method:'POST',headers:{'content-type':'application/json',...(TOKEN?{authorization:'Bearer '+TOKEN}:{})},body:JSON.stringify({a,...body})})}catch(e){throw new Error('No internet connection. Try again.')}
  let j={};try{j=await r.json()}catch(e){}
  if(r.status===401&&TOKEN&&a!=='login'){setToken('');S.session=null}
- if(!r.ok)throw new Error(j.error||(r.status===404?'The server part is not set up on this site yet.':'Server error ('+r.status+')'));
+ if(!r.ok)throw new Error(j.error||(r.status===404?'The server part (netlify/functions/api.mjs) is not deployed on this site. GitHub Pages cannot run it, so deploy the repository with Netlify.':'Server error ('+r.status+')'));
  return j}
 async function safe(fn){try{return await fn()}catch(e){toast(e.message||'Something went wrong',1)}}
 async function sync(force){
@@ -779,6 +1545,7 @@ function applyState(j,force){
  S.brands.forEach(b=>{if(b.id==='b_vtx'&&!b.logo)b.logo=LOGO});
  LOADED=true;
  if(S.session&&!me()){S.session=null}
+ if(UI.splash)return;
  const pc=pendingCount();document.title=(pc?`(${pc}) `:'')+'VTXOnline Shopping';
  notifyNew(prev,first);
  const r=route().name,ae=document.activeElement,typing=ae&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName);
@@ -800,8 +1567,8 @@ function notifyNew(prev,first){
  if(paid.length)toast(`New paid order ${paid[0].id} · ${money(paid[0].subtotal)}${paid.length>1?` (+${paid.length-1} more)`:''}`);
 }
 function renderBoot(){
- $('#app').innerHTML=SYNCERR?`<div class="authw"><div class="authc"><div class="lg0"><img src="${LOGO}" alt=""></div><div class="card"><h2>Can't reach the server</h2><p class="mut" style="margin:6px 0 12px">${esc(SYNCERR)}</p><button class="btn p full" data-a="retry">Try again</button></div></div></div>`
- :`<div class="authw"><div class="authc" style="text-align:center"><div class="lg0"><img src="${LOGO}" alt=""></div><p class="mut"><i class="spin"></i> Loading VTXOnline…</p></div></div>`}
+ $('#app').innerHTML=SYNCERR?`<div class="authw"><div class="authc"><div class="lg0"><img src="${LOGO}" alt=""></div><div class="card"><h2>Can't reach the server</h2><p class="mut" style="margin:6px 0 12px">${esc(SYNCERR)}</p><button class="btn p full" data-a="retry">Try again</button><button class="btn full" style="margin-top:10px" data-a="preview">Preview without server</button><p class="hint" style="margin-top:6px">Preview runs only on this device with practice data. It is not your real store.</p><p class="hint" style="margin-top:12px">To test the server, open <a href="/api" target="_blank" rel="noopener">${esc(location.host)}/api</a> in your browser. It should show <b>"ok":true</b>.</p></div></div></div>`
+ :`<div class="authw"><div class="authc" style="text-align:center"><div class="lg0"><img class="logo-anim" src="${LOGO}" alt="VTX"></div><p class="mut"><i class="spin"></i> Loading VTXOnline…</p></div></div>`}
 function pollLoop(){const mb=myBrand();const busy=(mb&&['publishing','pending'].includes(mb.status))||(mb&&S.products.some(p=>p.brandId===mb.id&&p.status==='publishing'));
  setTimeout(async()=>{if(!document.hidden)await sync(false);pollLoop()},busy?2000:6000)}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync(false)});
@@ -845,6 +1612,9 @@ const A={
  otab(a){UI.otab=a.dataset.v;render()},
  payfee(){safe(async()=>{const j=await api('fee.init');if(j.free){await sync(true);return}await payNow({reference:j.reference,amount:j.amount,email:j.email},'fee')})},
  repay(a){const ref=a.dataset.ref,os=S.orders.filter(o=>o.payRef===ref);if(!os.length)return;const amt=os.reduce((t,o)=>t+o.subtotal,0);safe(()=>payNow({reference:ref,amount:amt,email:me().email},'order'))},
+ demopayok(){const o=window.__demoPay;closeModal();if(o)setTimeout(()=>o.callback({reference:o.ref}),100)},
+ demopayno(){const o=window.__demoPay;closeModal();if(o&&o.onClose)o.onClose()},
+ preview(){installDemo();SYNCERR='';VER=0;LOADED=false;renderBoot();sync(true)},
  atab(a){UI.atab=a.dataset.v;if(UI.atab==='withdrawals')loadWd();render()},
  wm(a){const v=a.dataset.v;$('#wmeth').value=v;$('#wb').hidden=v!=='bank';$('#wc').hidden=v!=='crypto';document.querySelectorAll('#wb input,#wc input,#wc select').forEach(i=>{i.disabled=i.closest('#wb')?v!=='bank':v!=='crypto'});document.querySelectorAll('.wmc').forEach(c=>c.classList.toggle('on',c.dataset.v===v))},
  withdraw(){openWithdraw()},
@@ -867,8 +1637,9 @@ const A={
  pay(a){const id=a.dataset.id,v=a.dataset.v;safe(async()=>{await api('pay.act',{id,v});await sync(true);toast(v==='approve'?'Approved. The store is publishing.':'Payment rejected')})},
  bst(a){const id=a.dataset.id,v=a.dataset.v;safe(async()=>{await api('brand.admin',{id,v});await sync(true)})},
  bdel(a){if(!confirm('Delete this brand and its products?'))return;const id=a.dataset.id;safe(async()=>{await api('brand.admin',{id,v:'delete'});await sync(true)})},
- conn(a){const n=a.dataset.v,mb=myBrand();
-  openModal('Connect '+n,`<form id="cf" data-f="conn"><input type="hidden" name="platform" value="${n}">${n==='Shopify'?(mb&&mb.status==='active'?'':`<div class="ban wa"><div>Open and activate your brand first, then import products.</div></div>`):''}<label class="f"><span>Store link</span><input class="in" name="url" required placeholder="${n==='Shopify'?'your-store.myshopify.com':'https://your-store.com'}"></label><p class="hint">${n==='Shopify'?'Public products are imported into your brand. Prices are copied as numbers, so check them after import.':'Your request is saved and the admin will set up the sync with you.'}</p></form>`,`<button class="btn" data-a="closem">Cancel</button><button class="btn p" type="submit" form="cf">Connect</button>`)},
+ conn(a){const n=a.dataset.v,mb=myBrand(),live=LIVE.includes(n),pre=n==='UJU Store'?'https://veltexglobalapp-ui.github.io/Uju-store/':'';
+  openModal('Connect '+n,`<form id="cf" data-f="conn"><input type="hidden" name="platform" value="${n}">${live&&!(mb&&mb.status==='active')?`<div class="ban wa"><div>Open and activate your store first, then import products.</div></div>`:''}<label class="f"><span>Store link</span><input class="in" name="url" required value="${pre}" placeholder="${n==='Shopify'?'your-store.myshopify.com':'https://your-store.com'}"></label><p class="hint">${n==='Shopify'?'Public products are imported into your store. Prices are copied as numbers, so check them after import.':live?'We read the store\'s products.json feed and add each product to your store. Products need a photo, a price above 0 and a description to go live. Tap Sync now later to refresh them.':'Your request is saved and the admin will set up the sync with you.'}</p></form>`,`<button class="btn" data-a="closem">Cancel</button><button class="btn p" type="submit" form="cf">Connect</button>`)},
+ csync(a){const c=S.connections.find(x=>x.id===a.dataset.id);if(!c)return;safe(async()=>{toast('Syncing…');const products=await pullFeed(c.platform,c.url);const r=await api('product.import',{products,source:c.platform});await sync(true);toast(r.count+' products synced. Changes go live in a few seconds.')})},
  cdel(a){const id=a.dataset.id;safe(async()=>{await api('conn.del',{id});await sync(true)})},
  export(){const d={...S};delete d.cart;const bl=new Blob([JSON.stringify(d)],{type:'application/json'});const l=document.createElement('a');l.href=URL.createObjectURL(bl);l.download='vtxonline-backup.json';l.click()}
 };
@@ -906,15 +1677,11 @@ const F={
   const j=await api('order.create',{items:L.map(x=>({pid:x.c.pid,qty:x.c.qty})),ship,code:UI.code?UI.code.code:''});
   UI.code=null;UI.draft=null;S.cart=[];persist('cart');UI.otab='mine';await sync(true);go('#/orders');
   await payNow({reference:j.reference,amount:j.total,email:me().email},'order')})},
- conn(f,d){return safe(async()=>{const platform=d.get('platform'),url=d.get('url').trim(),mb=myBrand();let status='requested',count=0;
-  if(platform==='Shopify'){
-   if(!mb||mb.status!=='active')throw new Error('Open and activate your brand before importing from Shopify.');
-   let base=url.replace(/\/+$/,'');if(!/^https?:\/\//.test(base))base='https://'+base;
-   try{toast('Importing products…');const r=await fetch(base+'/products.json?limit=30');if(!r.ok)throw 0;const j=await r.json();const L=(j.products||[]).slice(0,30);if(!L.length)throw 0;
-    const products=L.map(sp=>({name:sp.title,price:parseFloat(sp.variants?.[0]?.price)||0,stock:20,category:CATS.includes(sp.product_type)?sp.product_type:'Other',description:(sp.body_html||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,600)||sp.title,images:(sp.images||[]).slice(0,3).map(i=>i.src)}));
-    const r2=await api('product.import',{products});status='imported';count=r2.count}
-   catch(e){toast('Could not read that store directly. Request saved for the admin.',1)}}
-  await api('conn.add',{platform,url,status,count});closeModal();await sync(true);if(status==='imported')toast(count+' products imported');else if(platform!=='Shopify')toast('Connection request saved')})}
+ conn(f,d){return safe(async()=>{const platform=d.get('platform'),url=d.get('url').trim();let status='requested',count=0;
+  if(LIVE.includes(platform)){const mb=myBrand();if(!mb||mb.status!=='active')throw new Error('Open and activate your store first, then import products.');
+   try{toast('Importing products…');const products=await pullFeed(platform,url);const r2=await api('product.import',{products,source:platform});status='imported';count=r2.count}
+   catch(e){if(platform!=='Other store')throw e;toast(e.message+' Request saved for the admin.',1)}}
+  await api('conn.add',{platform,url,status,count});closeModal();await sync(true);toast(status==='imported'?count+' products imported. They go live in a few seconds.':'Connection request saved')})}
 };
 document.addEventListener('submit',async e=>{const f=e.target.closest('form[data-f]');if(!f)return;e.preventDefault();
  const btn=f.querySelector('[type=submit]')||(f.id?document.querySelector(`[form="${f.id}"]`):null);if(btn)btn.disabled=true;
@@ -923,7 +1690,7 @@ document.addEventListener('submit',async e=>{const f=e.target.closest('form[data
 /* ---------- start ---------- */
 (async()=>{load();if(!location.hash)location.hash='#/home';renderBoot();
  addEventListener('resize',()=>{if(route().name==='chart')paintChart()});
- await sync(true);drawAI();pollLoop();
+ UI.splash=true;await Promise.all([sync(true),new Promise(r=>setTimeout(r,1500))]);UI.splash=false;if(LOADED)render();drawAI();pollLoop();
  loadRate().then(()=>{if(LOADED&&!['checkout','auth'].includes(route().name)&&!$('#modal').innerHTML)render()})})();
 </script>
 </body>
